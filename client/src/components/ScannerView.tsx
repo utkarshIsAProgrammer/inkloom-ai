@@ -15,7 +15,12 @@ import {
   ShieldAlert,
   Clock,
   BookOpen,
-  Filter
+  Filter,
+  Lock,
+  Cpu,
+  Key,
+  Fingerprint,
+  Zap
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { ScanResult, ViolationItem, UserRole, Severity, DocumentStatus } from '../types';
@@ -25,12 +30,18 @@ interface ScannerViewProps {
   currentRole: UserRole;
   onNavigateToReview: (docId?: string) => void;
   presetDraft?: any;
+  ephemeralMode: boolean;
+  setEphemeralMode: (enabled: boolean) => void;
+  onScanCompleted?: () => void;
 }
 
 export const ScannerView: React.FC<ScannerViewProps> = ({
   currentRole,
   onNavigateToReview,
-  presetDraft
+  presetDraft,
+  ephemeralMode,
+  setEphemeralMode,
+  onScanCompleted
 }) => {
   const [title, setTitle] = useState("Announcing Inkloom NextGen: Enterprise Workflow Automation");
   const [channel, setChannel] = useState("Marketing Copy");
@@ -42,6 +53,7 @@ export const ScannerView: React.FC<ScannerViewProps> = ({
   const [copied, setCopied] = useState(false);
   const [submitSuccess, setSubmitSuccess] = useState(false);
   const [documentId, setDocumentId] = useState<string>("draft-saas-launch");
+  const [scrubPii, setScrubPii] = useState(true);
 
   // Load preset or initial default
   useEffect(() => {
@@ -62,8 +74,16 @@ export const ScannerView: React.FC<ScannerViewProps> = ({
     if (!textToScan.trim()) return;
     setIsScanning(true);
     try {
-      const res = await api.scanContent(textToScan, currentTitle, currentChannel, documentId);
+      const res = await api.scanContent(
+        textToScan, 
+        currentTitle, 
+        currentChannel, 
+        documentId, 
+        ephemeralMode, 
+        scrubPii
+      );
       setScanResult(res);
+      if (onScanCompleted) onScanCompleted();
     } catch (err) {
       console.error("Scan error:", err);
     } finally {
@@ -158,12 +178,6 @@ export const ScannerView: React.FC<ScannerViewProps> = ({
     return v.severity === activeFilter;
   }) || [];
 
-  const getScoreColor = (score: number) => {
-    if (score >= 85) return 'text-emerald-400 stroke-emerald-500 bg-emerald-500/10 border-emerald-500/30';
-    if (score >= 60) return 'text-amber-400 stroke-amber-500 bg-amber-500/10 border-amber-500/30';
-    return 'text-rose-400 stroke-rose-500 bg-rose-500/10 border-rose-500/30';
-  };
-
   const score = scanResult?.compliance_score || 0;
 
   return (
@@ -200,11 +214,46 @@ export const ScannerView: React.FC<ScannerViewProps> = ({
           </div>
         </div>
 
-        {/* Action Controls */}
-        <div className="flex items-center gap-2 self-end md:self-center">
-          <label className="flex items-center gap-1.5 px-3 py-2 text-xs font-medium text-slate-300 hover:text-white bg-slate-800 hover:bg-slate-750 border border-slate-700 rounded-lg cursor-pointer transition">
+        {/* Security Toggles & Action Controls */}
+        <div className="flex items-center gap-2.5 self-end md:self-center flex-wrap">
+          
+          {/* Ephemeral Mode Toggle */}
+          <button
+            onClick={() => {
+              setEphemeralMode(!ephemeralMode);
+              runScan(content);
+            }}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border transition ${
+              ephemeralMode
+                ? 'bg-indigo-600/30 text-indigo-300 border-indigo-500/50'
+                : 'bg-slate-800 hover:bg-slate-750 text-slate-400 border-slate-700'
+            }`}
+            title="When active, content is evaluated purely in volatile RAM without disk writes"
+          >
+            <Lock className="w-3.5 h-3.5" />
+            <span>Vault Mode: {ephemeralMode ? 'ON' : 'OFF'}</span>
+          </button>
+
+          {/* Scrub PII Toggle */}
+          <button
+            onClick={() => {
+              setScrubPii(!scrubPii);
+              runScan(content);
+            }}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border transition ${
+              scrubPii
+                ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30'
+                : 'bg-slate-800 text-slate-400 border-slate-700'
+            }`}
+            title="Auto-mask API keys, credentials, and customer emails"
+          >
+            <Key className="w-3.5 h-3.5" />
+            <span>PII Shield: {scrubPii ? 'ON' : 'OFF'}</span>
+          </button>
+
+          <label className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-slate-300 hover:text-white bg-slate-800 hover:bg-slate-750 border border-slate-700 rounded-lg cursor-pointer transition">
             <FileUp className="w-3.5 h-3.5 text-indigo-400" />
-            <span>Upload File (.md, .txt)</span>
+            <span>Upload (.md, .txt)</span>
             <input 
               type="file" 
               accept=".txt,.md,.markdown,.json" 
@@ -216,13 +265,29 @@ export const ScannerView: React.FC<ScannerViewProps> = ({
           <button
             onClick={() => runScan(content)}
             disabled={isScanning}
-            className="flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 rounded-lg shadow-sm shadow-indigo-500/20 transition"
+            className="flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 rounded-lg shadow-sm shadow-indigo-500/20 transition"
           >
             <Sparkles className={`w-3.5 h-3.5 ${isScanning ? 'animate-spin' : ''}`} />
             <span>{isScanning ? 'Analyzing...' : 'Re-Scan'}</span>
           </button>
         </div>
       </div>
+
+      {/* PII / Secrets Warning Banner if detected */}
+      {scanResult && scanResult.pii_detected && scanResult.pii_detected.length > 0 && (
+        <div className="p-3.5 rounded-2xl bg-amber-950/30 border border-amber-500/40 flex items-center justify-between gap-3 text-xs text-amber-300">
+          <div className="flex items-center gap-2">
+            <AlertTriangle className="w-4 h-4 text-amber-400 shrink-0" />
+            <span>
+              <strong>PII / Credential Leak Intercepted: </strong>
+              Masked {scanResult.pii_detected.length} potential secrets ({scanResult.pii_detected.map(p => p.type).join(', ')}) before audit processing.
+            </span>
+          </div>
+          <span className="text-[10px] uppercase font-mono px-2 py-0.5 rounded bg-amber-500/20 font-bold border border-amber-500/30">
+            Auto-Shielded
+          </span>
+        </div>
+      )}
 
       {/* Main Dual-Pane Scanner Layout */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
@@ -238,6 +303,12 @@ export const ScannerView: React.FC<ScannerViewProps> = ({
                 <Clock className="w-3 h-3" />
                 {scanResult?.reading_time_seconds || 15}s read
               </span>
+              {scanResult && (
+                <span className="flex items-center gap-1 text-emerald-400 font-mono text-[11px]" title="Zero-lag local evaluation performance">
+                  <Zap className="w-3 h-3" />
+                  {scanResult.processing_time_ms} ms
+                </span>
+              )}
             </div>
 
             <div className="flex items-center gap-2">
@@ -279,15 +350,23 @@ export const ScannerView: React.FC<ScannerViewProps> = ({
               <div className="flex items-center gap-3">
                 <span>Tone: <strong className="text-slate-200">{scanResult?.formality_label || 'Executive'}</strong></span>
                 <span>Sentiment: <strong className="text-slate-200">{scanResult?.sentiment_label || 'Measured'}</strong></span>
+                {scanResult?.cryptographic_hash && (
+                  <span className="font-mono text-[10px] text-slate-500 hidden sm:inline" title="Client-Side Cryptographic Fingerprint">
+                    {scanResult.cryptographic_hash.slice(0, 16)}...
+                  </span>
+                )}
               </div>
 
               <button
                 onClick={handleSubmitForReview}
-                disabled={submitSuccess}
+                disabled={submitSuccess || ephemeralMode}
+                title={ephemeralMode ? "Disabled in Zero-Data Retention Mode" : "Push to collaborative review pipeline"}
                 className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition ${
-                  submitSuccess 
-                    ? 'bg-emerald-600 text-white' 
-                    : 'bg-indigo-600 hover:bg-indigo-500 text-white shadow-sm'
+                  ephemeralMode
+                    ? 'bg-slate-800 text-slate-500 cursor-not-allowed border border-slate-700'
+                    : submitSuccess 
+                      ? 'bg-emerald-600 text-white' 
+                      : 'bg-indigo-600 hover:bg-indigo-500 text-white shadow-sm'
                 }`}
               >
                 {submitSuccess ? (
@@ -298,7 +377,7 @@ export const ScannerView: React.FC<ScannerViewProps> = ({
                 ) : (
                   <>
                     <Send className="w-3.5 h-3.5" />
-                    <span>Submit for Review</span>
+                    <span>{ephemeralMode ? 'Vault Active (No Store)' : 'Submit for Review'}</span>
                   </>
                 )}
               </button>

@@ -26,6 +26,17 @@ class UserRole(str, Enum):
     BRAND_MANAGER = "BRAND_MANAGER"
     COMPLIANCE_OFFICER = "COMPLIANCE_OFFICER"
 
+class PlanTier(str, Enum):
+    FREE = "FREE"
+    PRO = "PRO"
+    ENTERPRISE = "ENTERPRISE"
+
+class PIIFlag(BaseModel):
+    type: str # 'API_KEY', 'SECRET_TOKEN', 'EMAIL', 'CREDIT_CARD', 'PHONE'
+    masked_preview: str
+    start_char: int
+    end_char: int
+
 class BrandRule(BaseModel):
     id: str
     name: str
@@ -60,6 +71,8 @@ class ScanRequest(BaseModel):
     channel: Optional[str] = "Marketing Copy"
     content: str
     document_id: Optional[str] = None
+    ephemeral: bool = False # If true: zero data retention mode, strictly in-memory
+    scrub_pii: bool = True  # If true: auto-masks API keys, credentials, and emails
 
 class ScoreBreakdown(BaseModel):
     tone: int
@@ -76,6 +89,10 @@ class ScanResult(BaseModel):
     sentiment_label: str
     formality_label: str
     violations: List[ViolationItem]
+    pii_detected: List[PIIFlag] = []
+    cryptographic_hash: str = ""
+    processing_time_ms: float = 0.0
+    ephemeral: bool = False
     scan_timestamp: float = Field(default_factory=time.time)
 
 class ImageScanRequest(BaseModel):
@@ -139,6 +156,7 @@ class ReviewDocument(BaseModel):
     approved_by: Optional[str] = None
     approved_at: Optional[float] = None
     certificate_id: Optional[str] = None
+    cryptographic_hash: Optional[str] = None
     created_at: float = Field(default_factory=time.time)
     updated_at: float = Field(default_factory=time.time)
 
@@ -153,3 +171,25 @@ class AddCommentRequest(BaseModel):
     author_role: UserRole
     text: str
     anchor_text: Optional[str] = None
+
+class UsageStats(BaseModel):
+    tier: PlanTier = PlanTier.FREE
+    tier_name: str = "Free Community Tier"
+    words_scanned: int = 2450
+    words_limit: int = 10000
+    words_remaining: int = 7550
+    scans_conducted: int = 14
+    max_rules: int = 25
+    active_rules: int = 13
+    features: List[str] = [
+        "10,000 words / month included (Zero credit card required)",
+        "Deterministic local-first real-time scanning (<5ms latency)",
+        "Ephemeral Zero-Data-Retention Vault mode",
+        "Automated PII & Secret Scrubber (AWS, API keys, credentials)",
+        "WCAG 2.1 AA Color Contrast & Alt-Text analysis",
+        "Verifiable SHA-256 Brand Clearance Certificates"
+    ]
+    reset_days_remaining: int = 9
+
+class ChangeTierRequest(BaseModel):
+    tier: PlanTier

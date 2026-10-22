@@ -15,6 +15,15 @@ export type DocumentStatus =
 
 export type UserRole = 'CREATOR' | 'BRAND_MANAGER' | 'COMPLIANCE_OFFICER';
 
+export type PlanTier = 'FREE' | 'PRO' | 'ENTERPRISE';
+
+export interface PIIFlag {
+  type: string;
+  masked_preview: string;
+  start_char: number;
+  end_char: number;
+}
+
 export interface BrandRule {
   id: string;
   name: string;
@@ -36,8 +45,8 @@ export interface ViolationItem {
   category: RuleCategory;
   severity: Severity;
   flagged_text: string;
-  start_char: intNumber;
-  end_char: intNumber;
+  start_char: number;
+  end_char: number;
   line_number: number;
   guideline_citation: string;
   guideline_excerpt: string;
@@ -45,8 +54,6 @@ export interface ViolationItem {
   suggested_fix: string;
   applied?: boolean;
 }
-
-type intNumber = number;
 
 export interface ScoreBreakdown {
   tone: number;
@@ -64,6 +71,10 @@ export interface ScanResult {
   sentiment_label: string;
   formality_label: string;
   violations: ViolationItem[];
+  pii_detected?: PIIFlag[];
+  cryptographic_hash?: string;
+  processing_time_ms?: number;
+  ephemeral?: boolean;
   scan_timestamp: number;
 }
 
@@ -115,8 +126,37 @@ export interface ReviewDocument {
   approved_by?: string;
   approved_at?: number;
   certificate_id?: string;
+  cryptographic_hash?: string;
   created_at: number;
   updated_at: number;
+}
+
+export interface UsageStats {
+  tier: PlanTier;
+  tier_name: string;
+  words_scanned: number;
+  words_limit: number;
+  words_remaining: number;
+  scans_conducted: number;
+  max_rules: number;
+  active_rules: number;
+  features: string[];
+  reset_days_remaining: number;
+}
+
+export interface SecuritySpecs {
+  architecture: string;
+  client_crypto: string;
+  server_encryption: string;
+  ephemeral_mode: {
+    supported: boolean;
+    description: string;
+  };
+  pii_scrubber: {
+    supported: boolean;
+    patterns: string[];
+  };
+  compliance_standards: string[];
 }
 
 export interface AnalyticsData {

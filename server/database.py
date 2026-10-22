@@ -5,7 +5,7 @@ import uuid
 from typing import List, Optional, Dict, Any
 from .models import (
     BrandRule, ReviewDocument, RuleCategory, Severity, DocumentStatus,
-    UserRole, ThreadedComment, AuditEntry, ScoreBreakdown
+    UserRole, ThreadedComment, AuditEntry, ScoreBreakdown, PlanTier, UsageStats
 )
 
 DATA_DIR = os.path.join(os.path.dirname(__file__), "data")
@@ -17,10 +17,12 @@ class Database:
     def __init__(self):
         self.rules: Dict[str, BrandRule] = {}
         self.documents: Dict[str, ReviewDocument] = {}
+        self.tier: PlanTier = PlanTier.FREE
+        self.words_scanned: int = 2450
+        self.total_scans: int = 186
         self.init_db()
 
     def init_db(self):
-        # Ensure data dir exists
         os.makedirs(DATA_DIR, exist_ok=True)
 
         if os.path.exists(STORAGE_FILE):
@@ -33,18 +35,22 @@ class Database:
                     for d_data in data.get("documents", []):
                         d = ReviewDocument(**d_data)
                         self.documents[d.id] = d
+                    self.tier = PlanTier(data.get("tier", "FREE"))
+                    self.words_scanned = data.get("words_scanned", 2450)
+                    self.total_scans = data.get("total_scans", 186)
                 return
             except Exception as e:
                 print(f"Error loading {STORAGE_FILE}, falling back to defaults: {e}")
 
-        # Load defaults
         self.reset_to_defaults()
 
     def reset_to_defaults(self):
         self.rules.clear()
         self.documents.clear()
+        self.tier = PlanTier.FREE
+        self.words_scanned = 2450
+        self.total_scans = 186
 
-        # Load default guidelines
         if os.path.exists(DEFAULT_RULES_FILE):
             with open(DEFAULT_RULES_FILE, "r", encoding="utf-8") as f:
                 raw_rules = json.load(f)
@@ -52,7 +58,6 @@ class Database:
                     rule = BrandRule(**r_data)
                     self.rules[rule.id] = rule
 
-        # Load default sample drafts
         if os.path.exists(DEFAULT_DRAFTS_FILE):
             with open(DEFAULT_DRAFTS_FILE, "r", encoding="utf-8") as f:
                 raw_drafts = json.load(f)
@@ -67,6 +72,9 @@ class Database:
             data = {
                 "rules": [r.model_dump() for r in self.rules.values()],
                 "documents": [d.model_dump() for d in self.documents.values()],
+                "tier": self.tier.value,
+                "words_scanned": self.words_scanned,
+                "total_scans": self.total_scans,
                 "last_persisted": time.time()
             }
             with open(STORAGE_FILE, "w", encoding="utf-8") as f:
@@ -170,12 +178,59 @@ class Database:
         self.persist()
         return doc
 
+    # Usage & Free Tier Tracker
+    def record_scan(self, word_count: int):
+        self.words_scanned += word_count
+        self.total_scans += 1
+        self.persist()
+
+    def get_usage(self) -> UsageStats:
+        tier_names = {
+            PlanTier.FREE: "Free Community Tier",
+            PlanTier.PRO: "Pro Team Tier ($29/mo)",
+            PlanTier.ENTERPRISE: "Enterprise Governance Scale"
+        }
+        word_limits = {
+            PlanTier.FREE: 10000,
+            PlanTier.PRO: 250000,
+            PlanTier.ENTERPRISE: 2000000
+        }
+        max_rules = {
+            PlanTier.FREE: 25,
+            PlanTier.PRO: 100,
+            PlanTier.ENTERPRISE: 500
+        }
+        limit = word_limits.get(self.tier, 10000)
+        remaining = max(0, limit - self.words_scanned)
+
+        return UsageStats(
+            tier=self.tier,
+            tier_name=tier_names.get(self.tier, "Free Tier"),
+            words_scanned=self.words_scanned,
+            words_limit=limit,
+            words_remaining=remaining,
+            scans_conducted=self.total_scans,
+            max_rules=max_rules.get(self.tier, 25),
+            active_rules=len([r for r in self.rules.values() if r.active]),
+            reset_days_remaining=9
+        )
+
+    def set_tier(self, new_tier: PlanTier) -> UsageStats:
+        self.tier = new_tier
+        self.persist()
+        return self.get_usage()
+
+    def emergency_purge(self) -> bool:
+        """Purge all stored drafts and audit logs for zero-data retention compliance."""
+        self.documents.clear()
+        self.persist()
+        return True
+
     def get_analytics(self) -> Dict[str, Any]:
         docs = list(self.documents.values())
-        total_scans = len(docs) + 182 # Base historical telemetry
-        avg_health = int(sum(d.compliance_score for d in docs) / max(1, len(docs))) if docs else 88
+        total_scans = self.total_scans
+        avg_health = int(sum(d.compliance_score for d in docs) / max(1, len(docs))) if docs else 92
 
-        # Count violations by category
         cat_counts = {
             "PRODUCT_FACTS": 42,
             "TONE_OF_VOICE": 31,

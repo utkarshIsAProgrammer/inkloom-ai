@@ -6,7 +6,10 @@ import {
   DocumentStatus,
   UserRole,
   AnalyticsData,
-  ViolationItem
+  ViolationItem,
+  UsageStats,
+  SecuritySpecs,
+  PlanTier
 } from '../types';
 
 const API_BASE = '/api';
@@ -14,6 +17,34 @@ const API_BASE = '/api';
 export const api = {
   async getHealth() {
     const res = await fetch('/health');
+    return res.json();
+  },
+
+  async getUsage(): Promise<UsageStats> {
+    const res = await fetch(`${API_BASE}/usage`);
+    if (!res.ok) throw new Error('Failed to fetch usage stats');
+    return res.json();
+  },
+
+  async switchTier(tier: PlanTier): Promise<UsageStats> {
+    const res = await fetch(`${API_BASE}/usage/tier`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ tier })
+    });
+    if (!res.ok) throw new Error('Failed to switch tier');
+    return res.json();
+  },
+
+  async getSecuritySpecs(): Promise<SecuritySpecs> {
+    const res = await fetch(`${API_BASE}/security/specs`);
+    if (!res.ok) throw new Error('Failed to fetch security specs');
+    return res.json();
+  },
+
+  async purgeData(): Promise<{ message: string; purged: boolean }> {
+    const res = await fetch(`${API_BASE}/security/purge`, { method: 'POST' });
+    if (!res.ok) throw new Error('Failed to purge data');
     return res.json();
   },
 
@@ -55,11 +86,25 @@ export const api = {
     return res.json();
   },
 
-  async scanContent(content: string, title?: string, channel?: string, documentId?: string): Promise<ScanResult> {
+  async scanContent(
+    content: string, 
+    title?: string, 
+    channel?: string, 
+    documentId?: string,
+    ephemeral?: boolean,
+    scrubPii?: boolean
+  ): Promise<ScanResult> {
     const res = await fetch(`${API_BASE}/scan`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ content, title, channel, document_id: documentId })
+      body: JSON.stringify({ 
+        content, 
+        title, 
+        channel, 
+        document_id: documentId,
+        ephemeral: Boolean(ephemeral),
+        scrub_pii: scrubPii !== false
+      })
     });
     if (!res.ok) throw new Error('Failed to scan content');
     return res.json();
