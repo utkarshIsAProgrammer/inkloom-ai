@@ -201,7 +201,7 @@ def get_analytics():
 client_dist = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "client", "dist"))
 if os.path.exists(client_dist):
     app.mount("/assets", StaticFiles(directory=os.path.join(client_dist, "assets")), name="assets")
-    @app.get("/{full_path:path}")
+    @app.api_route("/{full_path:path}", methods=["GET", "HEAD"])
     def serve_frontend(full_path: str):
         file_path = os.path.join(client_dist, full_path)
         if os.path.exists(file_path) and os.path.isfile(file_path):
