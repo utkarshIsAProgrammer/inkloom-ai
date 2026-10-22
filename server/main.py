@@ -185,7 +185,7 @@ def get_certificate(doc_id: str):
         "approved_by": doc.approved_by or "Brand Governance Board",
         "approved_at": doc.approved_at or time.time(),
         "compliance_score": doc.compliance_score,
-        "score_breakdown": doc.score_breakdown.dict(),
+        "score_breakdown": doc.score_breakdown.model_dump(),
         "digital_signature_hash": f"SHA256-{hash(doc.content + cert_id) & 0xffffffff:08x}",
         "governance_status": "CERTIFIED_BRAND_COMPLIANT",
         "verification_url": f"https://inkloom.ai/verify/{cert_id}"

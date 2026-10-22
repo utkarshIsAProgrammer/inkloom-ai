@@ -418,14 +418,26 @@
           "user_role": "COMPLIANCE_OFFICER",
           "action": "Certified & Approved",
           "details": "Official clearance certificate CERT-INKLOOM-2026-9842 issued"
+        },
+        {
+          "timestamp": 1792660797.4633012,
+          "user_role": "BRAND_MANAGER",
+          "action": "Status Transition",
+          "details": "Status changed from APPROVED to APPROVED by Shreya Kumari (BRAND_MANAGER). Note: Approved by brand lead"
+        },
+        {
+          "timestamp": 1792660870.903345,
+          "user_role": "BRAND_MANAGER",
+          "action": "Status Transition",
+          "details": "Status changed from APPROVED to APPROVED by Shreya Kumari (BRAND_MANAGER). Note: Approved by brand lead"
         }
       ],
-      "approved_by": "Shreya Kumari (Brand Manager)",
-      "approved_at": 1729593600.0,
+      "approved_by": "Shreya Kumari (BRAND_MANAGER)",
+      "approved_at": 1792660870.9033146,
       "certificate_id": "CERT-INKLOOM-2026-9842",
       "created_at": 1792659954.9592578,
-      "updated_at": 1792659954.959258
+      "updated_at": 1792660870.90327
     }
   ],
-  "last_persisted": 1792659954.9598439
+  "last_persisted": 1792660870.9035952
 }

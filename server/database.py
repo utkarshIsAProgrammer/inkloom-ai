@@ -65,8 +65,8 @@ class Database:
     def persist(self):
         try:
             data = {
-                "rules": [r.dict() for r in self.rules.values()],
-                "documents": [d.dict() for d in self.documents.values()],
+                "rules": [r.model_dump() for r in self.rules.values()],
+                "documents": [d.model_dump() for d in self.documents.values()],
                 "last_persisted": time.time()
             }
             with open(STORAGE_FILE, "w", encoding="utf-8") as f:
