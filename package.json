@@ -1,0 +1,14 @@
+{
+  "name": "inkloom-ai",
+  "version": "1.0.0",
+  "description": "Inkloom AI — Enterprise Brand-Governance Platform (Round 2 Build)",
+  "author": "indiedevs (Utkarsh Yadav, Shreya Kumari)",
+  "license": "MIT",
+  "scripts": {
+    "start": "python3 -m uvicorn server.main:app --host 0.0.0.0 --port 8000",
+    "build": "cd client && bun run build",
+    "dev:client": "cd client && bun run dev",
+    "dev:server": "python3 -m uvicorn server.main:app --host 0.0.0.0 --port 8000 --reload",
+    "test": "python3 -c 'from server.main import app; from fastapi.testclient import TestClient; c = TestClient(app); assert c.get(\"/health\").status_code == 200; print(\"Tests Passed!\")'"
+  }
+}
