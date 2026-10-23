@@ -10,6 +10,14 @@ echo "  Track: Enterprise AI & Workflow Automation"
 echo "  Team: indiedevs (Utkarsh Yadav & Shreya Kumari)"
 echo "=========================================================="
 
+# Free port 8000 if already occupied by an old process
+OLD_PID=$(lsof -ti:8000 2>/dev/null || true)
+if [ -n "$OLD_PID" ]; then
+    echo "🔄 Freeing existing process on port 8000 (PID: $OLD_PID)..."
+    kill -9 $OLD_PID 2>/dev/null || true
+    sleep 0.5
+fi
+
 # Activate virtualenv if present
 if [ -d "$DIR/.venv" ]; then
     source "$DIR/.venv/bin/activate"
