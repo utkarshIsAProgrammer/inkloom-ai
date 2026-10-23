@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Sparkles, ImageIcon, BookOpen, Users, Shield } from 'lucide-react';
+import { Sparkles, ImageIcon, BookOpen, Users, Lock } from 'lucide-react';
 
 interface MobileTabBarProps {
   activeTab: string;
@@ -20,12 +20,12 @@ export const MobileTabBar: React.FC<MobileTabBarProps> = ({
     { id: 'visual', label: 'Visual', icon: ImageIcon, badge: null },
     { id: 'rules', label: 'Rules', icon: BookOpen, badge: null },
     { id: 'review', label: 'Review', icon: Users, badge: pendingReviewsCount > 0 ? pendingReviewsCount : null },
-    { id: 'security', label: 'Vault', icon: Shield, badge: null }
+    { id: 'security', label: 'Vault', icon: Lock, badge: null }
   ];
 
   return (
-    <div className="absolute inset-x-3 bottom-4 z-40 pointer-events-none flex justify-center">
-      <nav className="pointer-events-auto flex w-full max-w-sm items-center justify-around gap-1 rounded-2xl border border-white/10 bg-neutral-950/90 p-1.5 shadow-2xl backdrop-blur-xl">
+    <div className="lg:hidden fixed inset-x-3 bottom-3 z-40 pointer-events-none flex justify-center">
+      <nav className="pointer-events-auto flex w-full max-w-md items-center justify-around gap-1 rounded-2xl border border-white/10 bg-[#09090D]/95 p-1.5 shadow-[0_15px_50px_rgba(0,0,0,0.9)] backdrop-blur-2xl">
         {tabs.map((tab) => {
           const Icon = tab.icon;
           const isActive = 
@@ -50,9 +50,9 @@ export const MobileTabBar: React.FC<MobileTabBarProps> = ({
 
               <span className="relative z-10 flex flex-col items-center gap-1">
                 <span className="relative">
-                  <Icon className={`w-4 h-4 ${isActive ? 'text-red-400' : 'text-neutral-500'}`} />
+                  <Icon className={`w-4 h-4 ${isActive ? 'text-rose-400' : 'text-neutral-500'}`} />
                   {tab.badge !== null && tab.badge > 0 && (
-                    <span className="absolute -top-1.5 -right-2.5 px-1.5 py-0.2 bg-red-600 text-white font-mono text-[8px] font-bold rounded-full border border-neutral-950">
+                    <span className="absolute -top-1.5 -right-2.5 px-1.5 py-0.2 bg-rose-600 text-white font-mono text-[8px] font-bold rounded-full border border-neutral-950">
                       {tab.badge}
                     </span>
                   )}

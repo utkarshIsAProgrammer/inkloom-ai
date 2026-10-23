@@ -263,231 +263,37 @@
       "author_role": "CREATOR",
       "channel": "Marketing Copy",
       "status": "APPROVED",
-      "content": "We are thrilled to unveil the new release of Inkloom Classic! It is the world's greatest workflow platform and an infinitely superior solution for all modern teams.\n\nUnlike traditional systems where AWS is clunky and slow, our new real-time distributed engine guarantees 100% uptime with zero downtime under any circumstances. Deployed in every country in the world, our cluster delivers <1ms latency everywhere with military-grade zero-hack encryption.\n\nYou'd be foolish not to upgrade immediately! Follow our updates on Twitter to learn more.",
-      "original_content": "We are thrilled to unveil the new release of Inkloom Classic! It is the world's greatest workflow platform and an infinitely superior solution for all modern teams.\n\nUnlike traditional systems where AWS is clunky and slow, our new real-time distributed engine guarantees 100% uptime with zero downtime under any circumstances. Deployed in every country in the world, our cluster delivers <1ms latency everywhere with military-grade zero-hack encryption.\n\nYou'd be foolish not to upgrade immediately! Follow our updates on Twitter to learn more.",
-      "compliance_score": 47,
+      "content": "We are thrilled to unveil the new release of Inkloom Enterprise Platform! It is the an industry-leading, rigorously benchmarked solution workflow platform and an an industry-leading, rigorously benchmarked solution solution for all modern teams.\n\nUnlike traditional systems where traditional legacy cloud architectures requiring complex manual tuning and slow, our new real-time distributed engine guarantees verified 99.95% standard SLA (up to 99.99% with Enterprise SLA addendum) with verified 99.95% standard SLA (up to 99.99% with Enterprise SLA addendum) under any circumstances. Deployed deployed across 42 certified global edge regions, our cluster delivers consistent sub-10ms p95 edge latency across major metros with enterprise AES-256 encryption at rest, TLS 1.3 in transit, and SOC 2 Type II certified infrastructure.\n\ndiscover how modern teams elevate governance with measurable ROI upgrade immediately! Follow our updates on X (formerly Twitter) to learn more.",
+      "original_content": "We are thrilled to unveil the new release of Inkloom Enterprise Platform! It is the an industry-leading, rigorously benchmarked solution workflow platform and an an industry-leading, rigorously benchmarked solution solution for all modern teams.\n\nUnlike traditional systems where traditional legacy cloud architectures requiring complex manual tuning and slow, our new real-time distributed engine guarantees verified 99.95% standard SLA (up to 99.99% with Enterprise SLA addendum) with verified 99.95% standard SLA (up to 99.99% with Enterprise SLA addendum) under any circumstances. Deployed deployed across 42 certified global edge regions, our cluster delivers consistent sub-10ms p95 edge latency across major metros with enterprise AES-256 encryption at rest, TLS 1.3 in transit, and SOC 2 Type II certified infrastructure.\n\ndiscover how modern teams elevate governance with measurable ROI upgrade immediately! Follow our updates on X (formerly Twitter) to learn more.",
+      "compliance_score": 100,
       "score_breakdown": {
-        "tone": 70,
-        "facts": 15,
-        "terminology": 55,
+        "tone": 100,
+        "facts": 100,
+        "terminology": 100,
         "clarity": 100
       },
-      "violations": [
-        {
-          "rule_id": "RULE-TERM-01",
-          "rule_name": "Deprecated Product Names",
-          "category": "RESTRICTED_TERMINOLOGY",
-          "severity": "CRITICAL",
-          "flagged_text": "Inkloom Classic",
-          "start_char": 45,
-          "end_char": 60,
-          "line_number": 1,
-          "guideline_citation": "Section 2.1 \u2014 Product Portfolio & Trademark Usage",
-          "guideline_excerpt": "Legacy product names 'Inkloom Classic', 'Inkloom v1', and 'CloudStack Pro' have been sunset. Always use 'Inkloom Enterprise Platform' or 'Inkloom AI Studio'.",
-          "ai_rationale": "Referencing sunset brand names confuses customers and causes licensing ambiguities.",
-          "suggested_fix": "Inkloom Enterprise Platform",
-          "applied": false
-        },
-        {
-          "rule_id": "RULE-TONE-01",
-          "rule_name": "Absolutist & Hyperbolic Tone",
-          "category": "TONE_OF_VOICE",
-          "severity": "WARNING",
-          "flagged_text": "world's greatest",
-          "start_char": 72,
-          "end_char": 88,
-          "line_number": 1,
-          "guideline_citation": "Section 1.2 \u2014 Brand Voice: Confident, Measured, Authoritative",
-          "guideline_excerpt": "Inkloom's brand voice is evidence-backed and sophisticated. Avoid empty superlatives like 'the world's greatest', 'miracle cure', 'revolutionary game-changer without equal'.",
-          "ai_rationale": "Hyperbolic copy undermines institutional trust and repels discerning enterprise decision makers.",
-          "suggested_fix": "an industry-leading, rigorously benchmarked solution",
-          "applied": false
-        },
-        {
-          "rule_id": "RULE-TONE-01",
-          "rule_name": "Absolutist & Hyperbolic Tone",
-          "category": "TONE_OF_VOICE",
-          "severity": "WARNING",
-          "flagged_text": "infinitely superior",
-          "start_char": 114,
-          "end_char": 133,
-          "line_number": 1,
-          "guideline_citation": "Section 1.2 \u2014 Brand Voice: Confident, Measured, Authoritative",
-          "guideline_excerpt": "Inkloom's brand voice is evidence-backed and sophisticated. Avoid empty superlatives like 'the world's greatest', 'miracle cure', 'revolutionary game-changer without equal'.",
-          "ai_rationale": "Hyperbolic copy undermines institutional trust and repels discerning enterprise decision makers.",
-          "suggested_fix": "an industry-leading, rigorously benchmarked solution",
-          "applied": false
-        },
-        {
-          "rule_id": "RULE-TERM-03",
-          "rule_name": "Prohibited Competitor Disparagement",
-          "category": "RESTRICTED_TERMINOLOGY",
-          "severity": "CRITICAL",
-          "flagged_text": "AWS is clunky",
-          "start_char": 199,
-          "end_char": 212,
-          "line_number": 3,
-          "guideline_citation": "Section 2.5 \u2014 Comparative Marketing & Fair Competition",
-          "guideline_excerpt": "Never disparage competitors with subjective insults like 'AWS is clunky and slow' or 'Datadog is a ripoff'. Focus strictly on our affirmative architectural advantages.",
-          "ai_rationale": "Defamatory competitor attacks expose the company to Lanham Act false-advertising and libel liability.",
-          "suggested_fix": "traditional legacy cloud architectures requiring complex manual tuning",
-          "applied": false
-        },
-        {
-          "rule_id": "RULE-FACT-01",
-          "rule_name": "Verified SLA & Uptime Guarantees",
-          "category": "PRODUCT_FACTS",
-          "severity": "CRITICAL",
-          "flagged_text": "100% uptime",
-          "start_char": 271,
-          "end_char": 282,
-          "line_number": 3,
-          "guideline_citation": "Section 4.1 \u2014 Operational Disclosures & Legal Guarantees",
-          "guideline_excerpt": "Never promise '100% uptime', 'zero downtime', or '99.999%' without explicit Legal and Enterprise SLA addendum. Our verified standard SLA is 99.95% (99.99% for Enterprise Tier).",
-          "ai_rationale": "Exaggerated SLA guarantees expose the company to breach-of-contract lawsuits and enterprise penalty claims.",
-          "suggested_fix": "verified 99.95% standard SLA (up to 99.99% with Enterprise SLA addendum)",
-          "applied": false
-        },
-        {
-          "rule_id": "RULE-FACT-01",
-          "rule_name": "Verified SLA & Uptime Guarantees",
-          "category": "PRODUCT_FACTS",
-          "severity": "CRITICAL",
-          "flagged_text": "zero downtime",
-          "start_char": 288,
-          "end_char": 301,
-          "line_number": 3,
-          "guideline_citation": "Section 4.1 \u2014 Operational Disclosures & Legal Guarantees",
-          "guideline_excerpt": "Never promise '100% uptime', 'zero downtime', or '99.999%' without explicit Legal and Enterprise SLA addendum. Our verified standard SLA is 99.95% (99.99% for Enterprise Tier).",
-          "ai_rationale": "Exaggerated SLA guarantees expose the company to breach-of-contract lawsuits and enterprise penalty claims.",
-          "suggested_fix": "verified 99.95% standard SLA (up to 99.99% with Enterprise SLA addendum)",
-          "applied": false
-        },
-        {
-          "rule_id": "RULE-FACT-02",
-          "rule_name": "Verified Global Infrastructure & Regions",
-          "category": "PRODUCT_FACTS",
-          "severity": "WARNING",
-          "flagged_text": "in every country in the world",
-          "start_char": 336,
-          "end_char": 365,
-          "line_number": 3,
-          "guideline_citation": "Section 4.3 \u2014 Infrastructure & Datacenter Disclosures",
-          "guideline_excerpt": "Only cite audited infrastructure metrics. Do not claim global availability 'in every single country' or 'infinite regions'. Our infrastructure is deployed across 42 certified edge regions.",
-          "ai_rationale": "False infrastructure claims fail technical due diligence with prospective enterprise buyers.",
-          "suggested_fix": "deployed across 42 certified global edge regions",
-          "applied": false
-        },
-        {
-          "rule_id": "RULE-FACT-03",
-          "rule_name": "Audited Latency Benchmarks",
-          "category": "PRODUCT_FACTS",
-          "severity": "WARNING",
-          "flagged_text": "<1ms latency everywhere",
-          "start_char": 388,
-          "end_char": 411,
-          "line_number": 3,
-          "guideline_citation": "Section 4.5 \u2014 Performance Claims & Benchmarks",
-          "guideline_excerpt": "Sub-millisecond claims must be qualified by geographical cache proximity. Replace blanket '<1ms latency everywhere' with verified '<10ms p95 edge latency'.",
-          "ai_rationale": "Blanket sub-millisecond promises are physically unverifiable and damage technical credibility with CTOs.",
-          "suggested_fix": "consistent sub-10ms p95 edge latency across major metros",
-          "applied": false
-        },
-        {
-          "rule_id": "RULE-FACT-04",
-          "rule_name": "Certified Security Standards",
-          "category": "PRODUCT_FACTS",
-          "severity": "CRITICAL",
-          "flagged_text": "military-grade zero-hack encryption",
-          "start_char": 417,
-          "end_char": 452,
-          "line_number": 3,
-          "guideline_citation": "Section 5.2 \u2014 Security & Compliance Architecture",
-          "guideline_excerpt": "Do not use marketing jargon like 'military-grade zero-hack encryption' or 'completely unhackable'. State accurate accreditations: AES-256 encryption at rest, TLS 1.3 in transit, and SOC 2 Type II compliance.",
-          "ai_rationale": "Security regulatory bodies and ISO auditors penalize absolutist claims of invulnerability.",
-          "suggested_fix": "enterprise AES-256 encryption at rest, TLS 1.3 in transit, and SOC 2 Type II certified infrastructure",
-          "applied": false
-        },
-        {
-          "rule_id": "RULE-TONE-02",
-          "rule_name": "High-Pressure Clickbait & Fear-Driven Copy",
-          "category": "TONE_OF_VOICE",
-          "severity": "WARNING",
-          "flagged_text": "You'd be foolish not to",
-          "start_char": 455,
-          "end_char": 478,
-          "line_number": 5,
-          "guideline_citation": "Section 1.4 \u2014 Ethical Marketing & Customer Empathy",
-          "guideline_excerpt": "Avoid aggressive countdown panics, fear-of-missing-out manipulations, or condescending phrases like 'you'd be foolish not to' or 'act before you get left behind forever'.",
-          "ai_rationale": "Aggressive sales pressure cheapens the brand and conflicts with enterprise consultative selling.",
-          "suggested_fix": "discover how modern teams elevate governance with measurable ROI",
-          "applied": false
-        },
-        {
-          "rule_id": "RULE-TERM-04",
-          "rule_name": "Third-Party Trademark Attribution",
-          "category": "RESTRICTED_TERMINOLOGY",
-          "severity": "INFO",
-          "flagged_text": "on Twitter",
-          "start_char": 519,
-          "end_char": 529,
-          "line_number": 5,
-          "guideline_citation": "Section 2.7 \u2014 Third-Party Brand & Social Platform Citations",
-          "guideline_excerpt": "When referencing Twitter, cite modern attribution: 'X (formerly Twitter)'. Do not use obsolete standalone Twitter trademark.",
-          "ai_rationale": "Proper attribution ensures trademark respect and partner compliance.",
-          "suggested_fix": "on X (formerly Twitter)",
-          "applied": false
-        }
-      ],
-      "comments": [
-        {
-          "id": "c-101",
-          "author": "Shreya Kumari",
-          "author_role": "BRAND_MANAGER",
-          "text": "The claims on 100% uptime and competitor naming (AWS) are red flags for Legal. Please run the Inkloom AI scanner and apply suggested remediations.",
-          "timestamp": 1729590000.0,
-          "resolved": false,
-          "anchor_text": "100% uptime"
-        }
-      ],
+      "violations": [],
+      "comments": [],
       "audit_trail": [
         {
-          "timestamp": 1729588000.0,
+          "timestamp": 1792736736.9716816,
           "user_role": "CREATOR",
-          "action": "Draft Created",
-          "details": "Initial draft drafted by Utkarsh Yadav"
-        },
-        {
-          "timestamp": 1729589200.0,
-          "user_role": "CREATOR",
-          "action": "AI Governance Scan",
-          "details": "Scan completed: 8 violations detected. Health score: 42/100"
-        },
-        {
-          "timestamp": 1792671750.1401713,
-          "user_role": "BRAND_MANAGER",
           "action": "Status Transition",
-          "details": "Status changed from DRAFT to APPROVED by Shreya Kumari (BRAND_MANAGER). Note: Approved by brand lead"
+          "details": "Status changed from IN_REVIEW to APPROVED by Utkarsh Yadav (CREATOR). Note: Certified brand compliant under policy standards."
         },
         {
-          "timestamp": 1792671779.453901,
-          "user_role": "BRAND_MANAGER",
-          "action": "Status Transition",
-          "details": "Status changed from APPROVED to APPROVED by Shreya Kumari (BRAND_MANAGER). Note: Approved by brand lead"
-        },
-        {
-          "timestamp": 1792734474.4376485,
+          "timestamp": 1792736950.5722086,
           "user_role": "BRAND_MANAGER",
           "action": "Status Transition",
           "details": "Status changed from APPROVED to APPROVED by Shreya Kumari (BRAND_MANAGER). Note: Approved by brand lead"
         }
       ],
       "approved_by": "Shreya Kumari (BRAND_MANAGER)",
-      "approved_at": 1792734474.4376178,
-      "certificate_id": "CERT-INKLOOM-2026-00922C",
-      "cryptographic_hash": "SHA256:4174606d85a27eb3c3132982cfc12d11f1f65b2da97fba5d792f54434dfe14cb",
-      "created_at": 1792659954.9592042,
-      "updated_at": 1792734474.437572
+      "approved_at": 1792736950.5721762,
+      "certificate_id": "CERT-INKLOOM-2026-D71BFA",
+      "cryptographic_hash": null,
+      "created_at": 1792736733.8671594,
+      "updated_at": 1792736950.572131
     },
     {
       "id": "draft-security-whitepaper",
@@ -628,7 +434,7 @@
     }
   ],
   "tier": "FREE",
-  "words_scanned": 3275,
-  "total_scans": 205,
-  "last_persisted": 1792734474.4975915
+  "words_scanned": 4993,
+  "total_scans": 228,
+  "last_persisted": 1792736950.6288931
 }

@@ -49,7 +49,7 @@ export const WorkflowSteps: React.FC<WorkflowStepsProps> = ({ activeTab, setActi
 
       <div className="flex items-center justify-between mb-3 px-1">
         <div className="text-[11px] font-mono font-semibold text-neutral-400 uppercase tracking-widest flex items-center gap-2">
-          <span className="text-red-500">///</span>
+          <span className="text-rose-500">///</span>
           <span>End-to-End Governance Architecture</span>
         </div>
         <div className="text-[10px] font-mono text-neutral-500 hidden sm:block">
@@ -66,26 +66,26 @@ export const WorkflowSteps: React.FC<WorkflowStepsProps> = ({ activeTab, setActi
             <button
               key={step.id}
               onClick={() => setActiveTab(step.id)}
-              className={`text-left p-3.5 rounded-lg border transition group relative flex items-start gap-3 overflow-hidden ${
+              className={`text-left p-3.5 rounded-xl border transition group relative flex items-start gap-3 overflow-hidden ${
                 isCurrent 
-                  ? 'bg-neutral-900 border-red-500/50 shadow-lg shadow-red-500/5' 
-                  : 'bg-neutral-950/60 border-white/10 hover:border-white/20 hover:bg-white/[0.02]'
+                  ? 'bg-neutral-900 border-rose-500/50 shadow-lg shadow-rose-500/10' 
+                  : 'bg-neutral-950/70 border-white/[0.08] hover:border-white/20 hover:bg-white/[0.02]'
               }`}
             >
               {/* Vertical light beam animation on active/hover */}
               {isCurrent && (
-                <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-red-500 to-transparent" />
+                <div className="absolute top-0 left-0 w-full h-[1.5px] bg-gradient-to-r from-transparent via-rose-500 to-transparent" />
               )}
 
-              <div className={`w-8 h-8 rounded-md flex items-center justify-center shrink-0 border transition ${
-                isCurrent ? 'bg-red-500 text-white border-red-400' : 'bg-neutral-900 border-white/10 text-neutral-400 group-hover:text-white'
+              <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 border transition ${
+                isCurrent ? 'bg-gradient-to-br from-rose-600 to-amber-600 text-white border-rose-400' : 'bg-neutral-900 border-white/10 text-neutral-400 group-hover:text-white'
               }`}>
                 <Icon className="w-4 h-4" />
               </div>
 
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-1.5">
-                  <span className={`text-[10px] font-mono font-bold ${isCurrent ? 'text-red-400' : 'text-neutral-500'}`}>
+                  <span className={`text-[10px] font-mono font-bold ${isCurrent ? 'text-rose-400' : 'text-neutral-500'}`}>
                     /// {step.num}
                   </span>
                 </div>

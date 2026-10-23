@@ -1,11 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { MobileAppShell } from './components/layout/MobileAppShell';
+import { Navbar } from './components/Navbar';
+import { WorkflowSteps } from './components/WorkflowSteps';
+import { MarqueeRibbon } from './components/MarqueeRibbon';
+import { MobileTabBar } from './components/layout/MobileTabBar';
 import { ScannerView } from './components/ScannerView';
 import { VisualScannerView } from './components/VisualScannerView';
 import { BrandRulesView } from './components/BrandRulesView';
 import { ReviewWorkflowView } from './components/ReviewWorkflowView';
-import { SecurityVaultView } from './components/SecurityVaultView';
 import { AnalyticsDashboardView } from './components/AnalyticsDashboardView';
+import { SecurityVaultView } from './components/SecurityVaultView';
 import { PricingTiersView } from './components/PricingTiersView';
 import { BrandCertificateModal } from './components/BrandCertificateModal';
 import { GuidedTourModal } from './components/GuidedTourModal';
@@ -27,7 +30,7 @@ export const App: React.FC = () => {
   const [pendingReviewsCount, setPendingReviewsCount] = useState<number>(1);
   const [violationsCount, setViolationsCount] = useState<number>(3);
 
-  // Check backend health, usage stats, and pending docs count on mount
+  // Check backend health & auto-trigger guided walkthrough on first launch
   useEffect(() => {
     const checkApi = async () => {
       try {
@@ -44,6 +47,17 @@ export const App: React.FC = () => {
     };
     checkApi();
     const interval = setInterval(checkApi, 25000);
+
+    // Auto-launch guided walkthrough if not previously completed
+    try {
+      const tourSeen = localStorage.getItem('inkloom_tour_completed');
+      if (!tourSeen) {
+        setIsTourOpen(true);
+      }
+    } catch (e) {
+      console.warn("Tour storage check skipped:", e);
+    }
+
     return () => clearInterval(interval);
   }, []);
 
@@ -96,69 +110,128 @@ export const App: React.FC = () => {
   };
 
   return (
-    <MobileAppShell
-      activeTab={activeTab}
-      setActiveTab={setActiveTab}
-      currentRole={currentRole}
-      setCurrentRole={setCurrentRole}
-      onOpenTour={() => setIsTourOpen(true)}
-      onOpenCommandPalette={() => setIsCommandPaletteOpen(true)}
-      isConnected={isConnected}
-      ephemeralMode={ephemeralMode}
-      setEphemeralMode={setEphemeralMode}
-      usage={usage}
-      onLoadPreset={handleLoadPreset}
-      violationsCount={violationsCount}
-      pendingReviewsCount={pendingReviewsCount}
-    >
-      {/* Active Tab View */}
-      {activeTab === 'scanner' && (
-        <ScannerView
-          currentRole={currentRole}
-          onNavigateToReview={handleNavigateToReview}
-          presetDraft={presetDraft}
-          ephemeralMode={ephemeralMode}
-          setEphemeralMode={setEphemeralMode}
-          onScanCompleted={refreshUsage}
-        />
-      )}
+    <div className="min-h-screen bg-[#060608] text-neutral-200 flex flex-col font-sans selection:bg-rose-500/30 selection:text-white relative">
+      
+      {/* Background Laser Grid Lines from demo */}
+      <div className="absolute inset-0 pointer-events-none grid grid-cols-6 max-w-7xl mx-auto px-6 z-0">
+        <div className="border-x border-white/[0.02] h-full w-full relative">
+          <div className="absolute top-0 left-0 w-[1px] h-32 bg-gradient-to-b from-transparent via-rose-500/20 to-transparent animate-beam" />
+        </div>
+        <div className="border-r border-white/[0.02] h-full w-full relative"></div>
+        <div className="border-r border-white/[0.02] h-full w-full relative">
+          <div className="absolute top-1/4 right-0 w-[1px] h-32 bg-gradient-to-b from-transparent via-amber-500/20 to-transparent animate-beam" style={{ animationDelay: '2s' }} />
+        </div>
+        <div className="border-r border-white/[0.02] h-full w-full relative"></div>
+        <div className="border-r border-white/[0.02] h-full w-full relative"></div>
+        <div className="border-r border-white/[0.02] h-full w-full relative"></div>
+      </div>
 
-      {activeTab === 'visual' && (
-        <VisualScannerView currentRole={currentRole} />
-      )}
+      {/* Top Global Executive Navigation */}
+      <Navbar
+        activeTab={activeTab}
+        setActiveTab={setActiveTab}
+        currentRole={currentRole}
+        setCurrentRole={setCurrentRole}
+        onLoadPreset={handleLoadPreset}
+        onOpenTour={() => setIsTourOpen(true)}
+        onOpenCommandPalette={() => setIsCommandPaletteOpen(true)}
+        isConnected={isConnected}
+        ephemeralMode={ephemeralMode}
+        setEphemeralMode={setEphemeralMode}
+        usage={usage}
+        pendingReviewsCount={pendingReviewsCount}
+      />
 
-      {activeTab === 'rules' && (
-        <BrandRulesView currentRole={currentRole} />
-      )}
+      {/* Main Responsive Viewport */}
+      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 relative z-10 pb-24 lg:pb-8">
+        
+        {/* Product Workflow 4-Step Journey Header (Responsive) */}
+        <WorkflowSteps activeTab={activeTab} setActiveTab={setActiveTab} />
 
-      {activeTab === 'review' && (
-        <ReviewWorkflowView
-          currentRole={currentRole}
-          selectedDocId={reviewDocId}
-          onOpenCertificate={(id) => setCertificateDocId(id)}
-        />
-      )}
+        {/* Capabilities Marquee Ribbon */}
+        <MarqueeRibbon />
 
-      {activeTab === 'security' && (
-        <SecurityVaultView
-          currentRole={currentRole}
-          ephemeralMode={ephemeralMode}
-          setEphemeralMode={setEphemeralMode}
-          usage={usage}
-          onUsageChanged={(updated) => setUsage(updated)}
-        />
-      )}
+        {/* Tab Views */}
+        {activeTab === 'scanner' && (
+          <ScannerView
+            currentRole={currentRole}
+            onNavigateToReview={handleNavigateToReview}
+            presetDraft={presetDraft}
+            ephemeralMode={ephemeralMode}
+            setEphemeralMode={setEphemeralMode}
+            onScanCompleted={refreshUsage}
+          />
+        )}
 
-      {activeTab === 'analytics' && (
-        <AnalyticsDashboardView currentRole={currentRole} />
-      )}
+        {activeTab === 'visual' && (
+          <VisualScannerView currentRole={currentRole} />
+        )}
 
-      {activeTab === 'pricing' && (
-        <PricingTiersView
-          usage={usage}
-          onTierChanged={(updated) => setUsage(updated)}
-        />
-      )}
+        {activeTab === 'rules' && (
+          <BrandRulesView currentRole={currentRole} />
+        )}
+
+        {activeTab === 'review' && (
+          <ReviewWorkflowView
+            currentRole={currentRole}
+            selectedDocId={reviewDocId}
+            onOpenCertificate={(id) => setCertificateDocId(id)}
+          />
+        )}
+
+        {activeTab === 'analytics' && (
+          <AnalyticsDashboardView currentRole={currentRole} />
+        )}
+
+        {activeTab === 'security' && (
+          <SecurityVaultView
+            currentRole={currentRole}
+            ephemeralMode={ephemeralMode}
+            setEphemeralMode={setEphemeralMode}
+            usage={usage}
+            onUsageChanged={(updated) => setUsage(updated)}
+          />
+        )}
+
+        {activeTab === 'pricing' && (
+          <PricingTiersView
+            usage={usage}
+            onTierChanged={(updated) => setUsage(updated)}
+          />
+        )}
+
+      </main>
+
+      {/* Floating Bottom Navigation Dock for Mobile & Tablet (hidden on desktop lg:) */}
+      <MobileTabBar
+        activeTab={activeTab}
+        setActiveTab={setActiveTab}
+        violationsCount={violationsCount}
+        pendingReviewsCount={pendingReviewsCount}
+      />
+
+      {/* Luxury Footer styled with Luminal Studio aesthetic */}
+      <footer className="border-t border-white/[0.08] bg-[#07070A]/95 py-6 text-center text-xs text-neutral-400 relative z-10">
+        <div className="max-w-7xl mx-auto px-4 flex flex-col md:flex-row items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <strong className="text-white font-syne uppercase tracking-wider">INKLOOM.AI</strong>
+            <span className="text-neutral-700 font-mono">///</span>
+            <span className="text-neutral-400 font-sans">Autonomous Brand Governance & Integrity Protocol</span>
+            <span className="text-neutral-700 font-mono">///</span>
+            <button 
+              onClick={() => setIsTourOpen(true)}
+              className="text-amber-400 hover:text-amber-300 font-mono text-[11px] underline transition-colors"
+            >
+              Interactive Tour
+            </button>
+          </div>
+          <div className="flex items-center gap-4 text-neutral-400 font-mono text-[11px]">
+            <span>TEAM: <strong className="text-white font-syne">INDIEDEVS</strong></span>
+            <span>Utkarsh Yadav • Shreya Kumari</span>
+            <span className="text-rose-500 font-semibold uppercase">Round 2 Build</span>
+          </div>
+        </div>
+      </footer>
 
       {/* Global Modals & Command Palette */}
       <CommandPalette
@@ -190,6 +263,6 @@ export const App: React.FC = () => {
         />
       )}
 
-    </MobileAppShell>
+    </div>
   );
 };
