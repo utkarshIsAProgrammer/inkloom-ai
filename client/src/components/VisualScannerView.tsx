@@ -10,7 +10,8 @@ import {
   Palette, 
   ShieldCheck, 
   Check, 
-  Wand2 
+  Wand2,
+  Sliders
 } from 'lucide-react';
 import { ImageScanResult, UserRole } from '../types';
 import { api } from '../services/api';
@@ -27,7 +28,7 @@ export const VisualScannerView: React.FC<VisualScannerViewProps> = ({ currentRol
   const [isScanning, setIsScanning] = useState(false);
   const [scanResult, setScanResult] = useState<ImageScanResult | null>(null);
 
-  // Pre-load a sample SVG/graphic preview
+  // Pre-load a sample preview
   useEffect(() => {
     runImageScan(altText);
   }, []);
@@ -65,228 +66,159 @@ export const VisualScannerView: React.FC<VisualScannerViewProps> = ({ currentRol
     }
   };
 
-  const approvedBrandColors = [
-    { name: 'Inkloom Indigo', hex: '#6366F1' },
-    { name: 'Slate Navy', hex: '#0F172A' },
-    { name: 'Emerald Teal', hex: '#10B981' },
-    { name: 'Neutral Canvas', hex: '#F8FAFC' }
+  const score = scanResult?.compliance_score || 72;
+
+  // Preset sample banners
+  const samplePresets = [
+    { label: 'Cloud Launch Banner', alt: 'Inkloom NextGen enterprise dashboard preview', file: 'Hero Banner - Q4' },
+    { label: 'Social Ad Graphic', alt: 'promo_graphic_v2.jpg', file: 'LinkedIn Sponsored Ad' },
+    { label: 'Developer Docs Diagram', alt: 'Arch diagram showing zero-data vault', file: 'Architecture Blueprint' }
   ];
 
-  const score = scanResult?.compliance_score || 70;
-
   return (
-    <div className="space-y-6">
+    <div className="space-y-3 animate-in">
       
       {/* Header Banner */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-slate-900/80 border border-slate-800 rounded-2xl p-4">
+      <div className="p-3.5 rounded-2xl bg-neutral-900/80 border border-white/10 flex items-center justify-between">
         <div>
-          <h2 className="text-lg font-bold text-white flex items-center gap-2">
-            <Palette className="w-5 h-5 text-indigo-400" />
-            <span>Multi-Modal Visual Asset & Brand Scanner</span>
-          </h2>
-          <p className="text-xs text-slate-400 mt-0.5">
-            Evaluate graphic collateral against brand color palettes, contrast ratios, and WCAG 2.1 AA accessibility guidelines.
+          <h3 className="font-syne font-bold text-sm text-white uppercase tracking-tight flex items-center gap-1.5">
+            <Palette className="w-4 h-4 text-red-400" />
+            <span>Visual Brand Scanner</span>
+          </h3>
+          <p className="text-[11px] text-neutral-400 mt-0.5">
+            Color palette harmony & WCAG 2.1 AA accessibility
           </p>
         </div>
 
-        <div className="flex items-center gap-3">
-          <label className="flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-500 rounded-lg cursor-pointer transition shadow-sm">
-            <Upload className="w-3.5 h-3.5" />
-            <span>Upload Visual Asset (PNG, JPG, SVG)</span>
-            <input type="file" accept="image/*" onChange={handleImageUpload} className="hidden" />
-          </label>
+        <label className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-red-600 hover:bg-red-500 text-white text-xs font-syne font-bold uppercase tracking-wider cursor-pointer shadow-sm transition">
+          <Upload className="w-3.5 h-3.5" />
+          <span>Upload</span>
+          <input type="file" accept="image/*" onChange={handleImageUpload} className="hidden" />
+        </label>
+      </div>
+
+      {/* Preset Chips */}
+      <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5">
+        {samplePresets.map((p, idx) => (
+          <button
+            key={idx}
+            onClick={() => {
+              setAssetName(p.file);
+              setAltText(p.alt);
+              runImageScan(p.alt);
+            }}
+            className="shrink-0 px-2.5 py-1 rounded-full text-[11px] font-mono bg-neutral-900 border border-white/10 hover:border-red-500/40 text-neutral-300 hover:text-white transition shadow-sm"
+          >
+            {p.label}
+          </button>
+        ))}
+      </div>
+
+      {/* Visual Asset Preview & Score Card */}
+      <div className="p-3.5 rounded-2xl bg-neutral-900/80 border border-white/10 space-y-3">
+        <div className="flex items-center justify-between">
+          <span className="font-syne font-bold text-xs uppercase text-white truncate max-w-[200px]">
+            {assetName}
+          </span>
+          <div className="flex items-center gap-1.5 font-mono text-xs">
+            <span className="text-neutral-500">Score:</span>
+            <span className="font-bold text-emerald-400">{score}%</span>
+          </div>
+        </div>
+
+        {/* Graphic Box */}
+        <div className="w-full h-36 rounded-xl bg-gradient-to-tr from-neutral-950 via-neutral-900 to-neutral-800 border border-white/10 flex flex-col items-center justify-center relative overflow-hidden group">
+          {imagePreview ? (
+            <img src={imagePreview} alt="Asset preview" className="w-full h-full object-cover" />
+          ) : (
+            <div className="text-center space-y-1.5 p-4">
+              <div className="w-10 h-10 rounded-full bg-red-500/10 border border-red-500/20 flex items-center justify-center mx-auto text-red-400">
+                <ImageIcon className="w-5 h-5" />
+              </div>
+              <p className="text-xs font-syne font-bold text-neutral-300 uppercase">Visual Graphic Simulator</p>
+              <p className="text-[10px] text-neutral-500 font-mono">Quantizing dominant colors & contrast</p>
+            </div>
+          )}
+
+          {isScanning && (
+            <div className="absolute inset-0 bg-black/60 backdrop-blur-xs flex items-center justify-center">
+              <Sparkles className="w-6 h-6 text-red-400 animate-spin" />
+            </div>
+          )}
+        </div>
+
+        {/* Dominant Palette Swatches */}
+        <div className="space-y-1.5">
+          <span className="text-[10px] font-mono uppercase text-neutral-500 tracking-wider">
+            /// Extracted Dominant Palette
+          </span>
+          <div className="grid grid-cols-4 gap-2">
+            {(scanResult?.dominant_colors || ['#0a0a0a', '#ef4444', '#1e293b', '#f8fafc']).map((c, i) => (
+              <div key={i} className="p-2 rounded-xl bg-neutral-950 border border-white/5 text-center space-y-1">
+                <div 
+                  className="w-full h-6 rounded-lg border border-white/10 shadow-inner" 
+                  style={{ backgroundColor: c }} 
+                />
+                <span className="font-mono text-[9px] text-neutral-400 uppercase block truncate">{c}</span>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        
-        {/* Left: Visual Asset Preview & Alt-Text Editor */}
-        <div className="lg:col-span-7 space-y-4">
-          
-          <div className="bg-slate-900/90 border border-slate-800 rounded-2xl p-4 space-y-4 shadow-sm">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-bold text-slate-300 uppercase tracking-wider">
-                Asset Preview: {assetName}
-              </span>
-              <span className="px-2 py-0.5 rounded text-[11px] font-semibold bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
-                {channel}
-              </span>
-            </div>
-
-            {/* Visual Canvas Area */}
-            <div className="relative w-full h-64 rounded-xl overflow-hidden border border-slate-800 bg-[#0B0F19] flex items-center justify-center">
-              {imagePreview ? (
-                <img src={imagePreview} alt={altText} className="w-full h-full object-contain" />
-              ) : (
-                /* High-fidelity procedural SVG Brand Graphic when no file uploaded */
-                <div className="w-full h-full bg-gradient-to-br from-[#0F172A] via-[#1E1B4B] to-[#0F172A] flex flex-col items-center justify-center p-6 text-center relative overflow-hidden">
-                  <div className="absolute -top-12 -right-12 w-48 h-48 rounded-full bg-indigo-500/20 blur-3xl pointer-events-none" />
-                  <div className="absolute -bottom-12 -left-12 w-48 h-48 rounded-full bg-emerald-500/15 blur-3xl pointer-events-none" />
-                  
-                  <div className="relative z-10 flex flex-col items-center space-y-3">
-                    <div className="w-14 h-14 rounded-2xl bg-indigo-600/30 border border-indigo-500/40 flex items-center justify-center shadow-lg shadow-indigo-500/30">
-                      <Layers className="w-7 h-7 text-indigo-400" />
-                    </div>
-                    <div className="text-sm font-bold text-white tracking-wide">
-                      Inkloom Enterprise Platform • 2026 Core Architecture
-                    </div>
-                    <div className="text-xs text-slate-400 max-w-sm">
-                      Distributed orchestration engine with sub-10ms edge latency and audited compliance logging.
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* Extracted Dominant Color Palette */}
-            <div className="space-y-2 pt-2 border-t border-slate-800">
-              <div className="flex items-center justify-between text-xs">
-                <span className="font-semibold text-slate-300">Extracted Palette vs. Brand Standards</span>
-                <span className="text-slate-400 text-[11px]">5 dominant swatches</span>
-              </div>
-
-              <div className="flex items-center gap-3 flex-wrap">
-                {(scanResult?.dominant_colors || ['#6366F1', '#0F172A', '#10B981', '#1E293B', '#38BDF8']).map((hex, idx) => (
-                  <div key={idx} className="flex items-center gap-1.5 bg-slate-800/60 px-2 py-1 rounded-lg border border-slate-700/60">
-                    <div className="w-4 h-4 rounded-full border border-white/20 shadow-sm" style={{ backgroundColor: hex }} />
-                    <span className="text-[11px] font-mono font-medium text-slate-300">{hex}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Accessibility Alt-Text Evaluation */}
-            <div className="space-y-2 pt-2 border-t border-slate-800">
-              <div className="flex items-center justify-between text-xs">
-                <span className="font-semibold text-slate-300 flex items-center gap-1.5">
-                  <Eye className="w-3.5 h-3.5 text-indigo-400" />
-                  <span>WCAG Alt-Text Accessibility Inspector</span>
-                </span>
-                <span className={`text-[11px] font-bold ${
-                  (scanResult?.alt_text_score || 0) >= 80 ? 'text-emerald-400' : 'text-amber-400'
-                }`}>
-                  Score: {scanResult?.alt_text_score || 40}/100
-                </span>
-              </div>
-
-              <div className="space-y-2">
-                <textarea
-                  value={altText}
-                  onChange={(e) => setAltText(e.target.value)}
-                  onBlur={() => runImageScan(altText)}
-                  rows={2}
-                  placeholder="Enter image alternative text (alt)..."
-                  className="w-full bg-slate-950/70 border border-slate-700/80 rounded-xl p-2.5 text-xs text-slate-200 focus:outline-none focus:border-indigo-500/60 font-sans"
-                />
-
-                {scanResult?.suggested_alt_text && scanResult.alt_text_score < 80 && (
-                  <div className="p-2.5 rounded-xl bg-indigo-950/30 border border-indigo-500/30 flex items-start justify-between gap-3 text-xs">
-                    <div className="space-y-1">
-                      <span className="font-bold text-indigo-300 block flex items-center gap-1">
-                        <Wand2 className="w-3 h-3 text-indigo-400" />
-                        AI-Generated WCAG Compliant Alt-Text:
-                      </span>
-                      <p className="text-slate-300 text-[11px] italic">
-                        "{scanResult.suggested_alt_text}"
-                      </p>
-                    </div>
-
-                    <button
-                      onClick={handleApplySuggestedAlt}
-                      className="px-2.5 py-1 text-[11px] font-bold rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white shrink-0 shadow-sm transition"
-                    >
-                      Apply Fix
-                    </button>
-                  </div>
-                )}
-              </div>
-            </div>
-
-          </div>
-
+      {/* WCAG AA Accessibility & Contrast Card */}
+      <div className="p-3.5 rounded-2xl bg-neutral-900/80 border border-white/10 space-y-2.5">
+        <div className="flex items-center justify-between">
+          <span className="font-syne font-bold text-xs uppercase text-white flex items-center gap-1.5">
+            <Eye className="w-3.5 h-3.5 text-red-400" />
+            <span>WCAG 2.1 AA Contrast</span>
+          </span>
+          <span className={`px-2 py-0.5 rounded-full text-[9px] font-mono font-bold uppercase border ${
+            scanResult?.contrast_ratio && scanResult.contrast_ratio >= 4.5 
+              ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30' 
+              : 'bg-amber-500/10 text-amber-400 border-amber-500/30'
+          }`}>
+            {scanResult?.contrast_ratio ? `${scanResult.contrast_ratio}:1 Ratio` : '4.8:1 PASS'}
+          </span>
         </div>
 
-        {/* Right: Visual Compliance Score & Rule Citations */}
-        <div className="lg:col-span-5 space-y-4">
-          
-          <div className="bg-slate-900/90 border border-slate-800 rounded-2xl p-4 shadow-sm space-y-4">
-            
-            <div className="flex items-center justify-between">
-              <div>
-                <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">
-                  Visual Compliance Index
-                </span>
-                <div className="text-2xl font-black text-white mt-0.5">
-                  {score}%
-                </div>
-              </div>
+        <p className="text-xs text-neutral-400">
+          Evaluates foreground text readability over background graphics to prevent accessibility violations before launch.
+        </p>
+      </div>
 
-              <span className={`px-2.5 py-1 rounded-full text-xs font-bold border ${
-                score >= 80 
-                  ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30' 
-                  : 'bg-amber-500/10 text-amber-400 border-amber-500/30'
-              }`}>
-                {scanResult?.status || 'COMPLIANT'}
-              </span>
-            </div>
-
-            {/* Metric Cards */}
-            <div className="grid grid-cols-2 gap-3 text-xs">
-              <div className="bg-slate-800/40 p-3 rounded-xl border border-slate-700/40 space-y-1">
-                <span className="text-slate-400 text-[11px]">Palette Alignment</span>
-                <div className="font-bold text-slate-200 text-sm">
-                  {scanResult?.brand_palette_match || 85}%
-                </div>
-                <div className="text-[10px] text-emerald-400">Harmonious with Indigo #6366F1</div>
-              </div>
-
-              <div className="bg-slate-800/40 p-3 rounded-xl border border-slate-700/40 space-y-1">
-                <span className="text-slate-400 text-[11px]">Contrast Ratio</span>
-                <div className="font-bold text-slate-200 text-sm">
-                  {scanResult?.contrast_ratio || 5.2}:1
-                </div>
-                <div className="text-[10px] text-emerald-400">Passes WCAG 2.1 AA (≥4.5:1)</div>
-              </div>
-            </div>
-
-            {/* Approved Brand Palette Reference */}
-            <div className="pt-2 border-t border-slate-800 space-y-2">
-              <span className="text-xs font-semibold text-slate-300 block">
-                Official 2026 Brand Standards:
-              </span>
-              <div className="grid grid-cols-2 gap-2 text-[11px]">
-                {approvedBrandColors.map(c => (
-                  <div key={c.hex} className="flex items-center gap-2 bg-slate-800/30 p-1.5 rounded-lg border border-slate-800">
-                    <div className="w-3.5 h-3.5 rounded-md" style={{ backgroundColor: c.hex }} />
-                    <span className="text-slate-300 font-medium">{c.name}</span>
-                    <span className="text-slate-500 font-mono text-[10px] ml-auto">{c.hex}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Recommendations List */}
-            {scanResult && scanResult.recommendations.length > 0 && (
-              <div className="pt-2 border-t border-slate-800 space-y-2">
-                <span className="text-xs font-semibold text-slate-300 block flex items-center gap-1.5">
-                  <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
-                  <span>Auditor Recommendations:</span>
-                </span>
-                <ul className="space-y-1.5 text-xs text-slate-400">
-                  {scanResult.recommendations.map((rec, i) => (
-                    <li key={i} className="flex items-start gap-1.5 bg-slate-800/30 p-2 rounded-lg border border-slate-800">
-                      <span className="text-indigo-400 font-bold">•</span>
-                      <span>{rec}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
-
-          </div>
-
+      {/* AI Alt-Text Governance Card */}
+      <div className="p-3.5 rounded-2xl bg-neutral-900/80 border border-white/10 space-y-2.5">
+        <div className="flex items-center justify-between">
+          <span className="font-syne font-bold text-xs uppercase text-white flex items-center gap-1.5">
+            <Wand2 className="w-3.5 h-3.5 text-amber-400" />
+            <span>Descriptive Alt-Text</span>
+          </span>
+          <span className="text-[10px] font-mono text-neutral-500">Screen Reader Check</span>
         </div>
 
+        <div className="p-2.5 rounded-xl bg-neutral-950 border border-white/5 space-y-1">
+          <span className="text-[9px] font-mono uppercase text-neutral-500">Current Alt Text:</span>
+          <p className="text-xs font-mono text-neutral-300">{altText}</p>
+        </div>
+
+        {scanResult?.suggested_alt_text && scanResult.suggested_alt_text !== altText && (
+          <div className="p-2.5 rounded-xl bg-emerald-950/20 border border-emerald-500/30 space-y-2">
+            <div>
+              <span className="text-[9px] font-mono uppercase text-emerald-400 font-bold block">
+                AI Suggested Accessible Alt-Text:
+              </span>
+              <p className="text-xs font-mono text-emerald-200 mt-0.5">{scanResult.suggested_alt_text}</p>
+            </div>
+
+            <button
+              onClick={handleApplySuggestedAlt}
+              className="w-full py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-[11px] font-syne font-bold uppercase tracking-wider transition shadow-sm"
+            >
+              Apply Recommended Alt Text ✨
+            </button>
+          </div>
+        )}
       </div>
 
     </div>

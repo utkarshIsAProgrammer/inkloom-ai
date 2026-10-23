@@ -98,6 +98,16 @@
   box-shadow: 0 0 8px rgba(245, 158, 11, 0.5);
 }
 
+/* Hide scrollbar utility */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+
 .violation-highlight.info {
   background: rgba(59, 130, 246, 0.22);
   border-bottom: 2px dashed #3B82F6;

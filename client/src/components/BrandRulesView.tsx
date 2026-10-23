@@ -27,7 +27,6 @@ export const BrandRulesView: React.FC<BrandRulesViewProps> = ({ currentRole }) =
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string>("ALL");
-  const [selectedSeverity, setSelectedSeverity] = useState<string>("ALL");
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   
   // New Rule form state
@@ -116,332 +115,272 @@ export const BrandRulesView: React.FC<BrandRulesViewProps> = ({ currentRole }) =
     }
   };
 
-  const handleExportJSON = () => {
-    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(rules, null, 2));
-    const downloadAnchor = document.createElement('a');
-    downloadAnchor.setAttribute("href", dataStr);
-    downloadAnchor.setAttribute("download", "inkloom_brand_rules_v2.json");
-    document.body.appendChild(downloadAnchor);
-    downloadAnchor.click();
-    downloadAnchor.remove();
-  };
-
   const filteredRules = rules.filter(r => {
     const matchesSearch = 
       r.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      r.guideline_section.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      r.guideline_text.toLowerCase().includes(searchQuery.toLowerCase()) ||
       r.pattern_or_terms.some(t => t.toLowerCase().includes(searchQuery.toLowerCase()));
-
-    const matchesCat = selectedCategory === "ALL" || r.category === selectedCategory;
-    const matchesSev = selectedSeverity === "ALL" || r.severity === selectedSeverity;
-
-    return matchesSearch && matchesCat && matchesSev;
+    
+    const matchesCategory = selectedCategory === "ALL" || r.category === selectedCategory;
+    return matchesSearch && matchesCategory;
   });
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-3 animate-in">
       
-      {/* Top Controls Header */}
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 bg-slate-900/80 border border-slate-800 rounded-2xl p-4">
+      {/* Header Banner */}
+      <div className="p-3.5 rounded-2xl bg-neutral-900/80 border border-white/10 flex items-center justify-between">
         <div>
-          <h2 className="text-lg font-bold text-white flex items-center gap-2">
-            <BookOpen className="w-5 h-5 text-indigo-400" />
-            <span>Centralized Brand Rule Repository</span>
-          </h2>
-          <p className="text-xs text-slate-400 mt-0.5">
-            Single source of truth for tone-of-voice dimensions, certified product claims, restricted vocabulary, and visual standards.
+          <h3 className="font-syne font-bold text-sm text-white uppercase tracking-tight flex items-center gap-1.5">
+            <BookOpen className="w-4 h-4 text-red-400" />
+            <span>Brand Rules Repository</span>
+          </h3>
+          <p className="text-[11px] text-neutral-400 mt-0.5">
+            {rules.filter(r => r.active).length} active corporate governance policies
           </p>
         </div>
 
-        <div className="flex items-center gap-2.5 flex-wrap">
-          <button
-            onClick={handleResetDefaults}
-            className="flex items-center gap-1.5 px-3 py-2 text-xs font-medium text-slate-300 hover:text-white bg-slate-800 hover:bg-slate-750 border border-slate-700 rounded-lg transition"
-            title="Reset to official enterprise brand rules"
-          >
-            <RotateCcw className="w-3.5 h-3.5" />
-            <span>Reset Defaults</span>
-          </button>
-
-          <button
-            onClick={handleExportJSON}
-            className="flex items-center gap-1.5 px-3 py-2 text-xs font-medium text-slate-300 hover:text-white bg-slate-800 hover:bg-slate-750 border border-slate-700 rounded-lg transition"
-          >
-            <Download className="w-3.5 h-3.5" />
-            <span>Export Rules</span>
-          </button>
-
-          <button
-            onClick={() => setIsAddModalOpen(true)}
-            className="flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-500 rounded-lg shadow-sm shadow-indigo-500/20 transition"
-          >
-            <Plus className="w-3.5 h-3.5" />
-            <span>Add Brand Rule</span>
-          </button>
-        </div>
+        <button
+          onClick={() => setIsAddModalOpen(true)}
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-red-600 hover:bg-red-500 text-white text-xs font-syne font-bold uppercase tracking-wider shadow-sm transition"
+        >
+          <Plus className="w-3.5 h-3.5" />
+          <span>Add Rule</span>
+        </button>
       </div>
 
-      {/* Filter and Search Bar */}
-      <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 bg-slate-900/60 border border-slate-800 rounded-xl p-3">
-        <div className="relative flex-1">
-          <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
-          <input
-            type="text"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search guidelines, rules, trigger keywords, citations..."
-            className="w-full bg-slate-950/70 border border-slate-700/80 rounded-lg pl-9 pr-4 py-1.5 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-indigo-500/60"
-          />
-        </div>
-
-        <div className="flex items-center gap-2">
-          <select
-            value={selectedCategory}
-            onChange={(e) => setSelectedCategory(e.target.value)}
-            className="bg-slate-950/70 border border-slate-700/80 text-xs text-slate-300 rounded-lg px-2.5 py-1.5 focus:outline-none focus:border-indigo-500"
-          >
-            <option value="ALL">All Categories</option>
-            <option value="TONE_OF_VOICE">Tone of Voice</option>
-            <option value="PRODUCT_FACTS">Product Facts & SLA</option>
-            <option value="RESTRICTED_TERMINOLOGY">Restricted Vocab</option>
-            <option value="VISUAL_GUIDELINES">Visual Standards</option>
-          </select>
-
-          <select
-            value={selectedSeverity}
-            onChange={(e) => setSelectedSeverity(e.target.value)}
-            className="bg-slate-950/70 border border-slate-700/80 text-xs text-slate-300 rounded-lg px-2.5 py-1.5 focus:outline-none focus:border-indigo-500"
-          >
-            <option value="ALL">All Severities</option>
-            <option value="CRITICAL">Critical</option>
-            <option value="WARNING">Warning</option>
-            <option value="INFO">Info</option>
-          </select>
-        </div>
+      {/* Mobile Search Bar */}
+      <div className="relative">
+        <Search className="w-3.5 h-3.5 text-neutral-500 absolute left-3 top-3" />
+        <input
+          type="text"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          placeholder="Search guidelines, terms, or SLA claims..."
+          className="w-full bg-neutral-900 border border-white/10 rounded-2xl pl-9 pr-3 py-2 text-xs text-white placeholder-neutral-500 focus:outline-none focus:border-red-500/50"
+        />
       </div>
 
-      {/* Rules Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {filteredRules.map(rule => {
-          const sevClass = {
-            CRITICAL: 'bg-rose-500/10 text-rose-400 border-rose-500/30',
-            WARNING: 'bg-amber-500/10 text-amber-400 border-amber-500/30',
-            INFO: 'bg-blue-500/10 text-blue-400 border-blue-500/30'
-          }[rule.severity];
+      {/* Category Filter Chips */}
+      <div className="flex items-center gap-1 overflow-x-auto no-scrollbar py-0.5">
+        {[
+          { id: 'ALL', label: 'All Rules' },
+          { id: 'TONE_OF_VOICE', label: 'Tone of Voice' },
+          { id: 'FACT_CLAIM', label: 'Fact & SLA Claims' },
+          { id: 'TERMINOLOGY', label: 'Restricted Lexicon' },
+          { id: 'INCLUSIVITY', label: 'Inclusivity' }
+        ].map(cat => (
+          <button
+            key={cat.id}
+            onClick={() => setSelectedCategory(cat.id)}
+            className={`shrink-0 px-2.5 py-1 rounded-full text-[10px] font-syne font-bold uppercase tracking-wider transition ${
+              selectedCategory === cat.id
+                ? 'bg-white text-black'
+                : 'bg-neutral-900 text-neutral-400 border border-white/5 hover:text-white'
+            }`}
+          >
+            {cat.label}
+          </button>
+        ))}
+      </div>
 
-          return (
+      {/* Rules List */}
+      <div className="space-y-2.5">
+        {filteredRules.length === 0 ? (
+          <div className="py-12 text-center text-neutral-500 text-xs">
+            No brand rules match your search.
+          </div>
+        ) : (
+          filteredRules.map(rule => (
             <div
               key={rule.id}
-              className={`p-4 rounded-2xl border transition space-y-3 ${
-                rule.active 
-                  ? 'bg-slate-900/90 border-slate-800 hover:border-slate-700' 
-                  : 'bg-slate-950/50 border-slate-850 opacity-60'
+              className={`p-3.5 rounded-2xl border transition space-y-2.5 ${
+                rule.active
+                  ? 'bg-neutral-900/80 border-white/10'
+                  : 'bg-neutral-950/40 border-white/5 opacity-60'
               }`}
             >
-              {/* Card Header */}
-              <div className="flex items-start justify-between gap-3">
-                <div className="space-y-1">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <span className={`px-2 py-0.5 text-[10px] font-bold uppercase rounded-md border ${sevClass}`}>
-                      {rule.severity}
-                    </span>
-                    <span className="text-xs font-mono text-slate-500">{rule.id}</span>
-                  </div>
-                  <h3 className="font-bold text-sm text-white">{rule.name}</h3>
+              {/* Header with Switch */}
+              <div className="flex items-center justify-between gap-2">
+                <div className="flex items-center gap-1.5 flex-wrap">
+                  <span className={`px-2 py-0.5 text-[8px] font-mono font-bold uppercase rounded border ${
+                    rule.severity === 'CRITICAL' ? 'bg-red-500/10 text-red-400 border-red-500/30' : 'bg-amber-500/10 text-amber-400 border-amber-500/30'
+                  }`}>
+                    {rule.severity}
+                  </span>
+                  <span className="text-xs font-syne font-bold text-white">
+                    {rule.name}
+                  </span>
                 </div>
 
-                {/* Active switch toggle */}
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={() => handleToggleActive(rule)}
-                    className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
-                      rule.active ? 'bg-indigo-600' : 'bg-slate-700'
+                {/* Active Toggle Switch */}
+                <button
+                  onClick={() => handleToggleActive(rule)}
+                  className={`w-9 h-5 rounded-full p-0.5 transition-colors duration-200 ease-in-out shrink-0 ${
+                    rule.active ? 'bg-red-600' : 'bg-neutral-800'
+                  }`}
+                >
+                  <div
+                    className={`w-4 h-4 rounded-full bg-white shadow-md transform transition-transform duration-200 ease-in-out ${
+                      rule.active ? 'translate-x-4' : 'translate-x-0'
                     }`}
-                  >
-                    <span
-                      className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
-                        rule.active ? 'translate-x-4' : 'translate-x-0'
-                      }`}
-                    />
-                  </button>
-
-                  <button
-                    onClick={() => handleDeleteRule(rule.id)}
-                    className="p-1 rounded text-slate-500 hover:text-rose-400 hover:bg-slate-800 transition"
-                    title="Delete rule"
-                  >
-                    <Trash2 className="w-3.5 h-3.5" />
-                  </button>
-                </div>
+                  />
+                </button>
               </div>
 
-              {/* Guideline Section Citation */}
-              <div className="text-xs text-indigo-400 font-medium">
-                {rule.guideline_section}
+              {/* Guideline Citation & Text */}
+              <div className="text-xs space-y-1">
+                <span className="text-[10px] font-mono text-neutral-400 block">
+                  {rule.guideline_section}
+                </span>
+                <p className="text-neutral-300 font-sans text-xs leading-relaxed bg-neutral-950/60 p-2.5 rounded-xl border border-white/5">
+                  "{rule.guideline_text}"
+                </p>
               </div>
 
-              {/* Guideline text excerpt */}
-              <div className="text-xs text-slate-300 bg-slate-850/80 p-2.5 rounded-xl border border-slate-800">
-                "{rule.guideline_text}"
-              </div>
-
-              {/* Pattern / Trigger Terms */}
+              {/* Monitored Patterns */}
               <div className="space-y-1">
-                <span className="text-[10px] font-bold uppercase text-slate-400 block">Flagged Triggers:</span>
-                <div className="flex flex-wrap gap-1.5">
-                  {rule.pattern_or_terms.map((term, i) => (
-                    <span key={i} className="px-2 py-0.5 text-[11px] rounded bg-slate-800 text-slate-300 border border-slate-700/60 font-mono">
-                      {term}
+                <span className="text-[9px] font-mono uppercase text-neutral-500">Monitored Phrases:</span>
+                <div className="flex flex-wrap gap-1">
+                  {rule.pattern_or_terms.map((t, idx) => (
+                    <span key={idx} className="font-mono text-[10px] px-2 py-0.5 rounded bg-white/5 text-neutral-300 border border-white/5">
+                      {t}
                     </span>
                   ))}
                 </div>
               </div>
 
-              {/* Suggested Replacement */}
-              <div className="text-xs pt-1 border-t border-slate-800/80 flex items-start gap-1.5 text-emerald-400">
-                <span className="font-semibold text-slate-400 shrink-0">Prescribed Fix:</span>
-                <span className="font-mono text-[11px]">{rule.suggested_fix}</span>
+              {/* Suggested Fix & Delete */}
+              <div className="pt-1 flex items-center justify-between text-xs text-neutral-400 border-t border-white/5">
+                <span className="text-[10px] font-mono truncate max-w-[220px]">
+                  Fix: <span className="text-emerald-400">{rule.suggested_fix}</span>
+                </span>
+
+                <button
+                  onClick={() => handleDeleteRule(rule.id)}
+                  className="text-neutral-500 hover:text-red-400 p-1 transition"
+                  title="Delete rule"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                </button>
               </div>
 
             </div>
-          );
-        })}
+          ))
+        )}
       </div>
 
-      {/* Add Rule Modal */}
+      {/* Add Rule Bottom Modal */}
       {isAddModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
-          <div className="bg-[#111827] border border-slate-700 rounded-2xl max-w-lg w-full p-6 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
-            
-            <div className="flex items-center justify-between pb-3 border-b border-slate-800">
-              <h3 className="font-bold text-base text-white flex items-center gap-2">
-                <Plus className="w-4 h-4 text-indigo-400" />
-                <span>Create Brand Governance Rule</span>
-              </h3>
-              <button 
-                onClick={() => setIsAddModalOpen(false)}
-                className="text-slate-400 hover:text-white"
-              >
-                <X className="w-5 h-5" />
+        <div 
+          className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-end justify-center p-3 sm:items-center"
+          onClick={() => setIsAddModalOpen(false)}
+        >
+          <div 
+            className="w-full max-w-sm rounded-3xl bg-neutral-900 border border-white/15 p-5 shadow-2xl animate-in space-y-4 max-h-[85vh] overflow-y-auto"
+            onClick={e => e.stopPropagation()}
+          >
+            <div className="w-12 h-1 bg-white/20 rounded-full mx-auto" />
+
+            <div className="flex items-center justify-between">
+              <h3 className="font-syne font-bold text-base text-white">Add Brand Rule</h3>
+              <button onClick={() => setIsAddModalOpen(false)} className="text-neutral-400 hover:text-white">
+                <X className="w-4 h-4" />
               </button>
             </div>
 
-            <form onSubmit={handleCreateRule} className="space-y-3.5 text-xs">
+            <form onSubmit={handleCreateRule} className="space-y-3 text-xs">
               <div>
-                <label className="block text-slate-300 font-semibold mb-1">Rule Title</label>
+                <label className="text-[10px] font-mono uppercase text-neutral-400 block mb-1">Rule Name</label>
                 <input
                   type="text"
                   required
                   value={newRule.name}
-                  onChange={(e) => setNewRule({ ...newRule, name: e.target.value })}
-                  placeholder="e.g. Certified Pricing Disclosures"
-                  className="w-full bg-slate-950 border border-slate-700 rounded-lg p-2 text-slate-200 focus:outline-none focus:border-indigo-500"
+                  onChange={e => setNewRule({ ...newRule, name: e.target.value })}
+                  placeholder="e.g. Prohibit absolute uptime claims"
+                  className="w-full bg-neutral-950 border border-white/10 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-red-500/50"
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <label className="block text-slate-300 font-semibold mb-1">Category</label>
+                  <label className="text-[10px] font-mono uppercase text-neutral-400 block mb-1">Category</label>
                   <select
                     value={newRule.category}
-                    onChange={(e) => setNewRule({ ...newRule, category: e.target.value as RuleCategory })}
-                    className="w-full bg-slate-950 border border-slate-700 rounded-lg p-2 text-slate-200 focus:outline-none focus:border-indigo-500"
+                    onChange={e => setNewRule({ ...newRule, category: e.target.value as RuleCategory })}
+                    className="w-full bg-neutral-950 border border-white/10 rounded-xl px-2.5 py-2 text-white focus:outline-none"
                   >
                     <option value="TONE_OF_VOICE">Tone of Voice</option>
-                    <option value="PRODUCT_FACTS">Product Facts & SLA</option>
-                    <option value="RESTRICTED_TERMINOLOGY">Restricted Vocab</option>
-                    <option value="VISUAL_GUIDELINES">Visual Standards</option>
+                    <option value="FACT_CLAIM">Fact Claim</option>
+                    <option value="TERMINOLOGY">Terminology</option>
+                    <option value="INCLUSIVITY">Inclusivity</option>
                   </select>
                 </div>
 
                 <div>
-                  <label className="block text-slate-300 font-semibold mb-1">Severity Level</label>
+                  <label className="text-[10px] font-mono uppercase text-neutral-400 block mb-1">Severity</label>
                   <select
                     value={newRule.severity}
-                    onChange={(e) => setNewRule({ ...newRule, severity: e.target.value as Severity })}
-                    className="w-full bg-slate-950 border border-slate-700 rounded-lg p-2 text-slate-200 focus:outline-none focus:border-indigo-500"
+                    onChange={e => setNewRule({ ...newRule, severity: e.target.value as Severity })}
+                    className="w-full bg-neutral-950 border border-white/10 rounded-xl px-2.5 py-2 text-white focus:outline-none"
                   >
-                    <option value="CRITICAL">Critical (Blocking)</option>
+                    <option value="CRITICAL">Critical</option>
                     <option value="WARNING">Warning</option>
-                    <option value="INFO">Informational</option>
+                    <option value="INFO">Info</option>
                   </select>
                 </div>
               </div>
 
               <div>
-                <label className="block text-slate-300 font-semibold mb-1">Guideline Section Reference</label>
-                <input
-                  type="text"
-                  value={newRule.guideline_section}
-                  onChange={(e) => setNewRule({ ...newRule, guideline_section: e.target.value })}
-                  placeholder="e.g. Section 4.2 — Commercial Terms"
-                  className="w-full bg-slate-950 border border-slate-700 rounded-lg p-2 text-slate-200 focus:outline-none focus:border-indigo-500"
-                />
-              </div>
-
-              <div>
-                <label className="block text-slate-300 font-semibold mb-1">Official Guideline Excerpt</label>
+                <label className="text-[10px] font-mono uppercase text-neutral-400 block mb-1">Guideline Text</label>
                 <textarea
-                  rows={2}
                   required
+                  rows={2}
                   value={newRule.guideline_text}
-                  onChange={(e) => setNewRule({ ...newRule, guideline_text: e.target.value })}
-                  placeholder="Official rule text from corporate style guide..."
-                  className="w-full bg-slate-950 border border-slate-700 rounded-lg p-2 text-slate-200 focus:outline-none focus:border-indigo-500"
+                  onChange={e => setNewRule({ ...newRule, guideline_text: e.target.value })}
+                  placeholder="State the official brand policy clearly..."
+                  className="w-full bg-neutral-950 border border-white/10 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-red-500/50"
                 />
               </div>
 
               <div>
-                <label className="block text-slate-300 font-semibold mb-1">Trigger Keywords (comma separated)</label>
+                <label className="text-[10px] font-mono uppercase text-neutral-400 block mb-1">Monitored Phrases (comma separated)</label>
                 <input
                   type="text"
-                  value={newRule.pattern_or_terms?.join(', ')}
-                  onChange={(e) => setNewRule({ ...newRule, pattern_or_terms: e.target.value.split(',').map(s => s.trim()) })}
-                  placeholder="term 1, phrase 2, keyword 3"
-                  className="w-full bg-slate-950 border border-slate-700 rounded-lg p-2 text-slate-200 focus:outline-none focus:border-indigo-500"
+                  value={(newRule.pattern_or_terms || []).join(', ')}
+                  onChange={e => setNewRule({ ...newRule, pattern_or_terms: e.target.value.split(',').map(s => s.trim()) })}
+                  placeholder="e.g. 100% uptime, zero downtime"
+                  className="w-full bg-neutral-950 border border-white/10 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-red-500/50"
                 />
               </div>
 
               <div>
-                <label className="block text-slate-300 font-semibold mb-1">AI Rationale (Why this creates risk)</label>
-                <input
-                  type="text"
-                  value={newRule.rationale}
-                  onChange={(e) => setNewRule({ ...newRule, rationale: e.target.value })}
-                  placeholder="Exposes company to misrepresentation claims..."
-                  className="w-full bg-slate-950 border border-slate-700 rounded-lg p-2 text-slate-200 focus:outline-none focus:border-indigo-500"
-                />
-              </div>
-
-              <div>
-                <label className="block text-slate-300 font-semibold mb-1">Prescribed Context-Preserving Fix</label>
+                <label className="text-[10px] font-mono uppercase text-neutral-400 block mb-1">Suggested Correction</label>
                 <input
                   type="text"
                   value={newRule.suggested_fix}
-                  onChange={(e) => setNewRule({ ...newRule, suggested_fix: e.target.value })}
-                  placeholder="safe, verified alternative phrasing..."
-                  className="w-full bg-slate-950 border border-slate-700 rounded-lg p-2 text-slate-200 focus:outline-none focus:border-indigo-500"
+                  onChange={e => setNewRule({ ...newRule, suggested_fix: e.target.value })}
+                  placeholder="e.g. 99.95% verified SLA"
+                  className="w-full bg-neutral-950 border border-white/10 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-red-500/50"
                 />
               </div>
 
-              <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-800">
+              <div className="pt-2 flex items-center gap-2">
                 <button
                   type="button"
                   onClick={() => setIsAddModalOpen(false)}
-                  className="px-3 py-1.5 rounded-lg text-slate-400 hover:text-white"
+                  className="flex-1 py-2 rounded-xl bg-neutral-800 text-neutral-300 font-syne font-bold uppercase"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-lg shadow-sm"
+                  className="flex-1 py-2 rounded-xl bg-red-600 hover:bg-red-500 text-white font-syne font-bold uppercase"
                 >
-                  Save Brand Rule
+                  Save Policy
                 </button>
               </div>
-
             </form>
-
           </div>
         </div>
       )}

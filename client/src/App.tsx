@@ -1,13 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Navbar } from './components/Navbar';
-import { WorkflowSteps } from './components/WorkflowSteps';
-import { MarqueeRibbon } from './components/MarqueeRibbon';
+import { MobileAppShell } from './components/layout/MobileAppShell';
 import { ScannerView } from './components/ScannerView';
 import { VisualScannerView } from './components/VisualScannerView';
 import { BrandRulesView } from './components/BrandRulesView';
 import { ReviewWorkflowView } from './components/ReviewWorkflowView';
-import { AnalyticsDashboardView } from './components/AnalyticsDashboardView';
 import { SecurityVaultView } from './components/SecurityVaultView';
+import { AnalyticsDashboardView } from './components/AnalyticsDashboardView';
 import { PricingTiersView } from './components/PricingTiersView';
 import { BrandCertificateModal } from './components/BrandCertificateModal';
 import { GuidedTourModal } from './components/GuidedTourModal';
@@ -26,8 +24,10 @@ export const App: React.FC = () => {
   const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState<boolean>(false);
   const [ephemeralMode, setEphemeralMode] = useState<boolean>(false);
   const [usage, setUsage] = useState<UsageStats | null>(null);
+  const [pendingReviewsCount, setPendingReviewsCount] = useState<number>(1);
+  const [violationsCount, setViolationsCount] = useState<number>(3);
 
-  // Check backend health & fetch usage stats on mount
+  // Check backend health, usage stats, and pending docs count on mount
   useEffect(() => {
     const checkApi = async () => {
       try {
@@ -35,12 +35,15 @@ export const App: React.FC = () => {
         setIsConnected(true);
         const u = await api.getUsage();
         setUsage(u);
+        const docs = await api.getDocuments();
+        const pending = docs.filter(d => d.status === 'IN_REVIEW').length;
+        setPendingReviewsCount(pending);
       } catch (e) {
         setIsConnected(false);
       }
     };
     checkApi();
-    const interval = setInterval(checkApi, 20000);
+    const interval = setInterval(checkApi, 25000);
     return () => clearInterval(interval);
   }, []);
 
@@ -60,6 +63,9 @@ export const App: React.FC = () => {
     try {
       const u = await api.getUsage();
       setUsage(u);
+      const docs = await api.getDocuments();
+      const pending = docs.filter(d => d.status === 'IN_REVIEW').length;
+      setPendingReviewsCount(pending);
     } catch (e) {
       console.error(e);
     }
@@ -86,108 +92,75 @@ export const App: React.FC = () => {
   const handleNavigateToReview = (docId?: string) => {
     setReviewDocId(docId);
     setActiveTab('review');
+    refreshUsage();
   };
 
   return (
-    <div className="min-h-screen bg-neutral-950 text-neutral-200 flex flex-col font-sans selection:bg-red-500/30 selection:text-white relative">
-      
-      {/* Top Global Navigation, Quota Gauge & Persona Switcher */}
-      <Navbar
-        activeTab={activeTab}
-        setActiveTab={setActiveTab}
-        currentRole={currentRole}
-        setCurrentRole={setCurrentRole}
-        onLoadPreset={handleLoadPreset}
-        onOpenTour={() => setIsTourOpen(true)}
-        onOpenCommandPalette={() => setIsCommandPaletteOpen(true)}
-        isConnected={isConnected}
-        ephemeralMode={ephemeralMode}
-        setEphemeralMode={setEphemeralMode}
-        usage={usage}
-      />
+    <MobileAppShell
+      activeTab={activeTab}
+      setActiveTab={setActiveTab}
+      currentRole={currentRole}
+      setCurrentRole={setCurrentRole}
+      onOpenTour={() => setIsTourOpen(true)}
+      onOpenCommandPalette={() => setIsCommandPaletteOpen(true)}
+      isConnected={isConnected}
+      ephemeralMode={ephemeralMode}
+      setEphemeralMode={setEphemeralMode}
+      usage={usage}
+      onLoadPreset={handleLoadPreset}
+      violationsCount={violationsCount}
+      pendingReviewsCount={pendingReviewsCount}
+    >
+      {/* Active Tab View */}
+      {activeTab === 'scanner' && (
+        <ScannerView
+          currentRole={currentRole}
+          onNavigateToReview={handleNavigateToReview}
+          presetDraft={presetDraft}
+          ephemeralMode={ephemeralMode}
+          setEphemeralMode={setEphemeralMode}
+          onScanCompleted={refreshUsage}
+        />
+      )}
 
-      {/* Main Content Viewport */}
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        
-        {/* Product Workflow 4-Step Journey Header */}
-        <WorkflowSteps activeTab={activeTab} setActiveTab={setActiveTab} />
+      {activeTab === 'visual' && (
+        <VisualScannerView currentRole={currentRole} />
+      )}
 
-        {/* Capabilities Marquee Ribbon from Luminal demo */}
-        <MarqueeRibbon />
+      {activeTab === 'rules' && (
+        <BrandRulesView currentRole={currentRole} />
+      )}
 
-        {/* Tab Views */}
-        {activeTab === 'scanner' && (
-          <ScannerView
-            currentRole={currentRole}
-            onNavigateToReview={handleNavigateToReview}
-            presetDraft={presetDraft}
-            ephemeralMode={ephemeralMode}
-            setEphemeralMode={setEphemeralMode}
-            onScanCompleted={refreshUsage}
-          />
-        )}
+      {activeTab === 'review' && (
+        <ReviewWorkflowView
+          currentRole={currentRole}
+          selectedDocId={reviewDocId}
+          onOpenCertificate={(id) => setCertificateDocId(id)}
+        />
+      )}
 
-        {activeTab === 'visual' && (
-          <VisualScannerView currentRole={currentRole} />
-        )}
+      {activeTab === 'security' && (
+        <SecurityVaultView
+          currentRole={currentRole}
+          ephemeralMode={ephemeralMode}
+          setEphemeralMode={setEphemeralMode}
+          usage={usage}
+          onUsageChanged={(updated) => setUsage(updated)}
+        />
+      )}
 
-        {activeTab === 'rules' && (
-          <BrandRulesView currentRole={currentRole} />
-        )}
+      {activeTab === 'analytics' && (
+        <AnalyticsDashboardView currentRole={currentRole} />
+      )}
 
-        {activeTab === 'review' && (
-          <ReviewWorkflowView
-            currentRole={currentRole}
-            selectedDocId={reviewDocId}
-            onOpenCertificate={(id) => setCertificateDocId(id)}
-          />
-        )}
+      {activeTab === 'pricing' && (
+        <PricingTiersView
+          usage={usage}
+          onTierChanged={(updated) => setUsage(updated)}
+        />
+      )}
 
-        {activeTab === 'analytics' && (
-          <AnalyticsDashboardView currentRole={currentRole} />
-        )}
-
-        {activeTab === 'security' && (
-          <SecurityVaultView
-            currentRole={currentRole}
-            ephemeralMode={ephemeralMode}
-            setEphemeralMode={setEphemeralMode}
-          />
-        )}
-
-        {activeTab === 'pricing' && (
-          <PricingTiersView
-            usage={usage}
-            onTierChanged={(updated) => setUsage(updated)}
-          />
-        )}
-
-      </main>
-
-      {/* Footer styled with Luminal Studio aesthetic */}
-      <footer className="border-t border-white/10 bg-neutral-950/80 py-6 text-center text-xs text-neutral-400">
-        <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-3">
-          <div className="flex items-center gap-3">
-            <strong className="text-white font-syne uppercase tracking-wider">Inkloom.AI</strong>
-            <span className="text-neutral-600 font-mono">///</span>
-            <span className="text-neutral-400 font-sans">Zero-Knowledge Brand-Governance Protocol</span>
-            <span className="text-neutral-600 font-mono">///</span>
-            <button 
-              onClick={() => setIsCommandPaletteOpen(true)}
-              className="text-neutral-400 hover:text-red-400 font-mono text-[11px] underline transition-colors"
-            >
-              ⌘K Quick Actions
-            </button>
-          </div>
-          <div className="flex items-center gap-4 text-neutral-400 font-mono text-[11px]">
-            <span>TEAM: <strong className="text-white font-syne">INDIEDEVS</strong></span>
-            <span>Utkarsh Yadav • Shreya Kumari</span>
-            <span className="text-red-500 font-semibold uppercase">Round 2 Build</span>
-          </div>
-        </div>
-      </footer>
-
-      {/* Modals & Command Palette */}
+      {/* Global Modals & Command Palette */}
       <CommandPalette
         isOpen={isCommandPaletteOpen}
         onClose={() => setIsCommandPaletteOpen(false)}
@@ -217,6 +190,6 @@ export const App: React.FC = () => {
         />
       )}
 
-    </div>
+    </MobileAppShell>
   );
 };

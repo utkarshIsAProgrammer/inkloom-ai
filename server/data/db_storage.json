@@ -474,14 +474,20 @@
           "user_role": "BRAND_MANAGER",
           "action": "Status Transition",
           "details": "Status changed from APPROVED to APPROVED by Shreya Kumari (BRAND_MANAGER). Note: Approved by brand lead"
+        },
+        {
+          "timestamp": 1792734474.4376485,
+          "user_role": "BRAND_MANAGER",
+          "action": "Status Transition",
+          "details": "Status changed from APPROVED to APPROVED by Shreya Kumari (BRAND_MANAGER). Note: Approved by brand lead"
         }
       ],
       "approved_by": "Shreya Kumari (BRAND_MANAGER)",
-      "approved_at": 1792671779.4538643,
+      "approved_at": 1792734474.4376178,
       "certificate_id": "CERT-INKLOOM-2026-00922C",
       "cryptographic_hash": "SHA256:4174606d85a27eb3c3132982cfc12d11f1f65b2da97fba5d792f54434dfe14cb",
       "created_at": 1792659954.9592042,
-      "updated_at": 1792732742.505285
+      "updated_at": 1792734474.437572
     },
     {
       "id": "draft-security-whitepaper",
@@ -622,7 +628,7 @@
     }
   ],
   "tier": "FREE",
-  "words_scanned": 3153,
-  "total_scans": 200,
-  "last_persisted": 1792732742.5055382
+  "words_scanned": 3275,
+  "total_scans": 205,
+  "last_persisted": 1792734474.4975915
 }

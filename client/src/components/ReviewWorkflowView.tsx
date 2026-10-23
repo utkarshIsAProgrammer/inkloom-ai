@@ -8,14 +8,16 @@ import {
   MessageSquare, 
   FileCheck, 
   Award, 
-  ArrowRight, 
+  ArrowLeft, 
   Check, 
   X, 
   GitCompare, 
   ShieldCheck, 
   Sparkles,
   History,
-  CornerDownRight
+  CornerDownRight,
+  ChevronRight,
+  FileText
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { ReviewDocument, DocumentStatus, UserRole, ThreadedComment } from '../types';
@@ -36,6 +38,8 @@ export const ReviewWorkflowView: React.FC<ReviewWorkflowViewProps> = ({
   const [selectedDoc, setSelectedDoc] = useState<ReviewDocument | null>(null);
   const [loading, setLoading] = useState(true);
   const [diffMode, setDiffMode] = useState(false);
+  const [activeFilter, setActiveFilter] = useState<'ALL' | DocumentStatus>('ALL');
+  const [isDetailView, setIsDetailView] = useState(false);
   
   // New comment input
   const [commentText, setCommentText] = useState("");
@@ -47,7 +51,10 @@ export const ReviewWorkflowView: React.FC<ReviewWorkflowViewProps> = ({
       setDocuments(data);
       if (selectedDocId) {
         const found = data.find(d => d.id === selectedDocId);
-        if (found) setSelectedDoc(found);
+        if (found) {
+          setSelectedDoc(found);
+          setIsDetailView(true);
+        }
       } else if (data.length > 0 && !selectedDoc) {
         setSelectedDoc(data[0]);
       }
@@ -117,7 +124,7 @@ export const ReviewWorkflowView: React.FC<ReviewWorkflowViewProps> = ({
   const getStatusBadge = (status: DocumentStatus) => {
     switch (status) {
       case 'DRAFT':
-        return 'bg-slate-700/60 text-slate-300 border-slate-600';
+        return 'bg-neutral-800 text-neutral-300 border-white/10';
       case 'IN_REVIEW':
         return 'bg-amber-500/10 text-amber-400 border-amber-500/30';
       case 'CHANGES_REQUESTED':
@@ -125,290 +132,262 @@ export const ReviewWorkflowView: React.FC<ReviewWorkflowViewProps> = ({
       case 'APPROVED':
         return 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30';
       case 'PUBLISHED':
-        return 'bg-indigo-500/10 text-indigo-400 border-indigo-500/30';
+        return 'bg-blue-500/10 text-blue-400 border-blue-500/30';
       default:
-        return 'bg-slate-800 text-slate-300';
+        return 'bg-neutral-800 text-neutral-300';
     }
   };
 
+  const filteredDocs = documents.filter(d => {
+    if (activeFilter === 'ALL') return true;
+    return d.status === activeFilter;
+  });
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-3">
       
-      {/* Header Banner */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-slate-900/80 border border-slate-800 rounded-2xl p-4">
-        <div>
-          <h2 className="text-lg font-bold text-white flex items-center gap-2">
-            <Users className="w-5 h-5 text-indigo-400" />
-            <span>Collaborative Review & Approval Workflow</span>
-          </h2>
-          <p className="text-xs text-slate-400 mt-0.5">
-            Role-based editorial pipeline: Creators submit, Brand Managers review change tracking, and Compliance Officers certify releases.
-          </p>
-        </div>
+      {/* If viewing a single document in Detail Mode */}
+      {isDetailView && selectedDoc ? (
+        <div className="space-y-3 animate-in">
+          
+          {/* Top Back Navigation Bar */}
+          <div className="flex items-center justify-between">
+            <button
+              onClick={() => setIsDetailView(false)}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-neutral-900 border border-white/10 text-xs font-syne font-bold uppercase tracking-wider text-neutral-300 hover:text-white transition"
+            >
+              <ArrowLeft className="w-3.5 h-3.5 text-red-400" />
+              <span>Back to Documents</span>
+            </button>
 
-        {selectedDoc && (selectedDoc.status === 'APPROVED' || selectedDoc.status === 'PUBLISHED') && (
-          <button
-            onClick={() => onOpenCertificate(selectedDoc.id)}
-            className="flex items-center gap-2 px-3.5 py-2 text-xs font-bold text-white bg-gradient-to-r from-emerald-600 to-indigo-600 hover:from-emerald-500 hover:to-indigo-500 rounded-xl shadow-md transition"
-          >
-            <Award className="w-4 h-4" />
-            <span>View Brand Clearance Certificate</span>
-          </button>
-        )}
-      </div>
-
-      {/* Main Two-Column Workflow Board */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        
-        {/* Left Column: Document Pipeline List */}
-        <div className="lg:col-span-4 space-y-3">
-          <div className="text-xs font-semibold text-slate-400 uppercase tracking-wider px-1">
-            Tracked Documents ({documents.length})
+            <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold uppercase border ${getStatusBadge(selectedDoc.status)}`}>
+              {selectedDoc.status.replace('_', ' ')}
+            </span>
           </div>
 
-          <div className="space-y-2">
-            {documents.map(doc => {
-              const isSelected = selectedDoc?.id === doc.id;
-              return (
+          {/* Document Header Card */}
+          <div className="p-3.5 rounded-2xl bg-neutral-900/80 border border-white/10 space-y-2">
+            <h3 className="font-syne font-bold text-base text-white leading-snug">
+              {selectedDoc.title}
+            </h3>
+            
+            <div className="flex items-center justify-between text-xs text-neutral-400 pt-1 border-t border-white/5">
+              <div className="flex items-center gap-2">
+                <span className="font-mono text-[10px] px-2 py-0.5 rounded bg-white/5 text-neutral-300">
+                  {selectedDoc.channel}
+                </span>
+                <span>By <strong className="text-white">{selectedDoc.author}</strong></span>
+              </div>
+              <div className="font-mono text-emerald-400 font-bold">
+                {selectedDoc.compliance_score}%
+              </div>
+            </div>
+
+            {/* Official Brand Certificate Action if Approved */}
+            {(selectedDoc.status === 'APPROVED' || selectedDoc.status === 'PUBLISHED') && (
+              <button
+                onClick={() => onOpenCertificate(selectedDoc.id)}
+                className="w-full mt-2 py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 text-white text-xs font-syne font-bold uppercase tracking-wider shadow-lg flex items-center justify-center gap-2"
+              >
+                <Award className="w-4 h-4" />
+                <span>View Brand Clearance Certificate</span>
+              </button>
+            )}
+          </div>
+
+          {/* Persona Review Action Bar */}
+          <div className="p-3 rounded-2xl bg-neutral-900/90 border border-white/10 space-y-2">
+            <div className="text-[10px] font-mono uppercase text-neutral-500 tracking-wider flex items-center justify-between">
+              <span>/// Editorial Sign-off</span>
+              <span className="text-red-400 font-bold">{currentRole.replace('_', ' ')}</span>
+            </div>
+
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                onClick={() => handleStatusChange('APPROVED', 'Certified brand compliant under policy standards.')}
+                className="py-2 px-3 rounded-xl bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-300 border border-emerald-500/40 text-xs font-syne font-bold uppercase tracking-wider flex items-center justify-center gap-1.5 transition"
+              >
+                <Check className="w-3.5 h-3.5" />
+                <span>Approve & Sign</span>
+              </button>
+
+              <button
+                onClick={() => handleStatusChange('CHANGES_REQUESTED', 'Please address the flagged policy violations.')}
+                className="py-2 px-3 rounded-xl bg-rose-600/20 hover:bg-rose-600/30 text-rose-300 border border-rose-500/40 text-xs font-syne font-bold uppercase tracking-wider flex items-center justify-center gap-1.5 transition"
+              >
+                <X className="w-3.5 h-3.5" />
+                <span>Request Revision</span>
+              </button>
+            </div>
+          </div>
+
+          {/* Content & Diff Toggle */}
+          <div className="rounded-2xl bg-neutral-900/80 border border-white/10 overflow-hidden">
+            <div className="px-3 py-2 bg-neutral-950/80 border-b border-white/10 flex items-center justify-between text-xs">
+              <span className="font-mono text-[11px] text-neutral-400">Content Snapshot</span>
+              <button
+                onClick={() => setDiffMode(!diffMode)}
+                className={`flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-mono transition ${
+                  diffMode ? 'bg-red-500/20 text-red-300 border border-red-500/30' : 'bg-neutral-800 text-neutral-400'
+                }`}
+              >
+                <GitCompare className="w-3 h-3" />
+                <span>Diff Mode</span>
+              </button>
+            </div>
+
+            <div className="p-3 text-xs font-mono leading-relaxed text-neutral-300 max-h-56 overflow-y-auto whitespace-pre-wrap">
+              {diffMode ? (
+                <div>
+                  <div className="text-[10px] text-red-400 font-bold uppercase mb-1">Original Draft:</div>
+                  <p className="line-through text-red-300/80 mb-3">{selectedDoc.original_content || selectedDoc.content}</p>
+                  <div className="text-[10px] text-emerald-400 font-bold uppercase mb-1">Approved Revision:</div>
+                  <p className="text-emerald-300">{selectedDoc.content}</p>
+                </div>
+              ) : (
+                selectedDoc.content
+              )}
+            </div>
+          </div>
+
+          {/* Threaded Comments & Audit Log */}
+          <div className="p-3.5 rounded-2xl bg-neutral-900/80 border border-white/10 space-y-3">
+            <div className="flex items-center justify-between">
+              <span className="font-syne font-bold text-xs uppercase text-white flex items-center gap-1.5">
+                <MessageSquare className="w-3.5 h-3.5 text-red-400" />
+                <span>Review Comments ({selectedDoc.comments.length})</span>
+              </span>
+              <span className="text-[10px] font-mono text-neutral-500">Live Thread</span>
+            </div>
+
+            {/* Comments List */}
+            <div className="space-y-2 max-h-48 overflow-y-auto">
+              {selectedDoc.comments.length === 0 ? (
+                <p className="text-xs text-neutral-500 italic py-2 text-center">No comments yet. Start the review discussion.</p>
+              ) : (
+                selectedDoc.comments.map(c => (
+                  <div key={c.id} className="p-2.5 rounded-xl bg-neutral-950/70 border border-white/5 space-y-1">
+                    <div className="flex items-center justify-between text-[10px]">
+                      <span className="font-syne font-bold text-white">{c.author}</span>
+                      <span className="text-neutral-500 font-mono">{new Date(c.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                    </div>
+                    <p className="text-xs text-neutral-300 font-sans">{c.text}</p>
+                  </div>
+                ))
+              )}
+            </div>
+
+            {/* Comment Form */}
+            <form onSubmit={handleAddComment} className="flex items-center gap-1.5 pt-1">
+              <input
+                type="text"
+                value={commentText}
+                onChange={(e) => setCommentText(e.target.value)}
+                placeholder="Leave feedback or approval note..."
+                className="flex-1 bg-neutral-950 border border-white/10 rounded-xl px-3 py-2 text-xs text-white placeholder-neutral-500 focus:outline-none focus:border-red-500/50"
+              />
+              <button
+                type="submit"
+                className="p-2 rounded-xl bg-red-600 hover:bg-red-500 text-white transition shrink-0"
+              >
+                <Send className="w-3.5 h-3.5" />
+              </button>
+            </form>
+          </div>
+
+        </div>
+      ) : (
+        /* Document Feed List View */
+        <div className="space-y-3 animate-in">
+          
+          {/* Header Banner */}
+          <div className="p-3.5 rounded-2xl bg-neutral-900/80 border border-white/10 flex items-center justify-between">
+            <div>
+              <h3 className="font-syne font-bold text-sm text-white uppercase tracking-tight flex items-center gap-1.5">
+                <Users className="w-4 h-4 text-red-400" />
+                <span>Review Pipeline</span>
+              </h3>
+              <p className="text-[11px] text-neutral-400 mt-0.5">
+                {documents.length} campaigns in review workflow
+              </p>
+            </div>
+
+            <button
+              onClick={loadDocuments}
+              className="p-1.5 rounded-lg bg-neutral-950 border border-white/10 text-neutral-400 hover:text-white"
+            >
+              <Clock className="w-3.5 h-3.5" />
+            </button>
+          </div>
+
+          {/* Filter Pills */}
+          <div className="flex items-center gap-1 overflow-x-auto no-scrollbar py-0.5">
+            {(['ALL', 'IN_REVIEW', 'APPROVED', 'CHANGES_REQUESTED', 'DRAFT'] as const).map(flt => (
+              <button
+                key={flt}
+                onClick={() => setActiveFilter(flt)}
+                className={`px-2.5 py-1 rounded-full text-[10px] font-syne font-bold uppercase tracking-wider whitespace-nowrap transition ${
+                  activeFilter === flt
+                    ? 'bg-white text-black'
+                    : 'bg-neutral-900 text-neutral-400 border border-white/5 hover:text-white'
+                }`}
+              >
+                {flt.replace('_', ' ')}
+              </button>
+            ))}
+          </div>
+
+          {/* Cards Feed */}
+          <div className="space-y-2.5">
+            {filteredDocs.length === 0 ? (
+              <div className="py-12 text-center text-neutral-500 text-xs">
+                No documents found for this filter.
+              </div>
+            ) : (
+              filteredDocs.map(doc => (
                 <div
                   key={doc.id}
-                  onClick={() => setSelectedDoc(doc)}
-                  className={`p-3.5 rounded-xl border cursor-pointer transition space-y-2 ${
-                    isSelected
-                      ? 'bg-slate-800/90 border-indigo-500/50 shadow-md shadow-indigo-500/10'
-                      : 'bg-slate-900/60 border-slate-800 hover:bg-slate-850/60 hover:border-slate-700'
-                  }`}
+                  onClick={() => {
+                    setSelectedDoc(doc);
+                    setIsDetailView(true);
+                  }}
+                  className="p-3.5 rounded-2xl bg-neutral-900/80 border border-white/10 hover:border-red-500/40 transition cursor-pointer space-y-2 shadow-sm"
                 >
-                  <div className="flex items-start justify-between gap-2">
-                    <span className="font-bold text-xs text-slate-200 line-clamp-1">{doc.title}</span>
-                    <span className={`px-2 py-0.5 text-[10px] font-bold uppercase rounded-md border shrink-0 ${getStatusBadge(doc.status)}`}>
+                  <div className="flex items-center justify-between gap-2">
+                    <span className={`px-2 py-0.5 rounded-full text-[9px] font-mono font-bold uppercase border ${getStatusBadge(doc.status)}`}>
                       {doc.status.replace('_', ' ')}
                     </span>
-                  </div>
-
-                  <div className="flex items-center justify-between text-[11px] text-slate-400">
-                    <span>{doc.channel}</span>
-                    <span className="font-semibold text-emerald-400">Score: {doc.compliance_score}%</span>
-                  </div>
-
-                  <div className="flex items-center justify-between text-[10px] text-slate-500 pt-1 border-t border-slate-800/80">
-                    <span>Author: {doc.author}</span>
-                    <span>{doc.comments.length} comments</span>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* Right Column: Selected Document Review Canvas */}
-        <div className="lg:col-span-8 space-y-4">
-          {selectedDoc ? (
-            <div className="bg-slate-900/90 border border-slate-800 rounded-2xl p-5 shadow-sm space-y-5">
-              
-              {/* Document Review Header */}
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-slate-800">
-                <div className="space-y-1">
-                  <div className="flex items-center gap-2">
-                    <span className={`px-2 py-0.5 text-[10px] font-bold uppercase rounded-md border ${getStatusBadge(selectedDoc.status)}`}>
-                      {selectedDoc.status.replace('_', ' ')}
+                    <span className="text-[10px] font-mono text-neutral-500">
+                      {doc.channel}
                     </span>
-                    <span className="text-xs text-slate-400">• Channel: {selectedDoc.channel}</span>
                   </div>
-                  <h3 className="font-extrabold text-base text-white">{selectedDoc.title}</h3>
-                </div>
 
-                {/* Diff Toggle */}
-                <button
-                  onClick={() => setDiffMode(!diffMode)}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border transition ${
-                    diffMode 
-                      ? 'bg-indigo-600/30 text-indigo-300 border-indigo-500/50' 
-                      : 'bg-slate-800 text-slate-300 border-slate-700 hover:bg-slate-750'
-                  }`}
-                >
-                  <GitCompare className="w-3.5 h-3.5" />
-                  <span>{diffMode ? 'Exit Diff View' : 'View Changes Diff'}</span>
-                </button>
-              </div>
+                  <h4 className="font-syne font-bold text-sm text-white group-hover:text-red-400 transition leading-snug">
+                    {doc.title}
+                  </h4>
 
-              {/* Role Action Bar */}
-              <div className="p-3.5 rounded-xl bg-slate-850/90 border border-slate-750 flex flex-wrap items-center justify-between gap-3 text-xs">
-                <div className="flex items-center gap-2">
-                  <span className="text-slate-400">Current Persona:</span>
-                  <strong className="text-indigo-400">
-                    {currentRole === 'CREATOR' ? 'Utkarsh Yadav (Creator)' : (currentRole === 'BRAND_MANAGER' ? 'Shreya Kumari (Brand Manager)' : 'Compliance Lead')}
-                  </strong>
-                </div>
-
-                <div className="flex items-center gap-2 flex-wrap">
-                  {/* Actions for Creator */}
-                  {currentRole === 'CREATOR' && (
-                    <button
-                      onClick={() => handleStatusChange('IN_REVIEW', 'Draft submitted by creator')}
-                      className="px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white font-semibold transition"
-                    >
-                      Submit for Brand Review
-                    </button>
-                  )}
-
-                  {/* Actions for Brand Manager */}
-                  {currentRole === 'BRAND_MANAGER' && (
-                    <>
-                      <button
-                        onClick={() => handleStatusChange('CHANGES_REQUESTED', 'Please address the flagged tone and competitor citations')}
-                        className="px-3 py-1.5 rounded-lg bg-rose-600/20 hover:bg-rose-600/40 text-rose-300 border border-rose-500/30 font-semibold transition"
-                      >
-                        Request Changes
-                      </button>
-                      <button
-                        onClick={() => handleStatusChange('APPROVED', 'Brand Manager approved after AI remediation')}
-                        className="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-semibold transition shadow-sm"
-                      >
-                        Approve Content
-                      </button>
-                    </>
-                  )}
-
-                  {/* Actions for Compliance Officer */}
-                  {currentRole === 'COMPLIANCE_OFFICER' && (
-                    <button
-                      onClick={() => handleStatusChange('PUBLISHED', 'Compliance audit verified. Certificate issued.')}
-                      className="px-3 py-1.5 rounded-lg bg-gradient-to-r from-amber-600 to-indigo-600 hover:from-amber-500 hover:to-indigo-500 text-white font-bold transition shadow-sm"
-                    >
-                      Certify & Publish
-                    </button>
-                  )}
-                </div>
-              </div>
-
-              {/* Content Body / Diff View */}
-              <div className="space-y-2">
-                <div className="flex items-center justify-between text-xs text-slate-400">
-                  <span className="font-semibold text-slate-300">
-                    {diffMode ? 'Original Draft vs. AI-Governed Version' : 'Governed Content Preview'}
-                  </span>
-                  <span className="text-emerald-400 font-bold">Health Score: {selectedDoc.compliance_score}/100</span>
-                </div>
-
-                {diffMode ? (
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs font-mono">
-                    <div className="p-3 bg-rose-950/20 border border-rose-900/30 rounded-xl space-y-1">
-                      <span className="text-[10px] uppercase font-bold text-rose-400 block">Original Unchecked Content:</span>
-                      <p className="text-rose-200/90 whitespace-pre-wrap leading-relaxed">
-                        {selectedDoc.original_content}
-                      </p>
-                    </div>
-
-                    <div className="p-3 bg-emerald-950/20 border border-emerald-900/30 rounded-xl space-y-1">
-                      <span className="text-[10px] uppercase font-bold text-emerald-400 block">AI Remediated Content:</span>
-                      <p className="text-emerald-200 whitespace-pre-wrap leading-relaxed">
-                        {selectedDoc.content}
-                      </p>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="p-4 bg-slate-950/70 border border-slate-800 rounded-xl text-xs font-mono text-slate-200 whitespace-pre-wrap leading-relaxed min-h-[160px]">
-                    {selectedDoc.content}
-                  </div>
-                )}
-              </div>
-
-              {/* Threaded Collaboration Comments */}
-              <div className="space-y-3 pt-3 border-t border-slate-800">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold text-slate-300 flex items-center gap-1.5">
-                    <MessageSquare className="w-4 h-4 text-indigo-400" />
-                    <span>Editorial Comments & Discussions ({selectedDoc.comments.length})</span>
-                  </span>
-                </div>
-
-                <div className="space-y-2 max-h-52 overflow-y-auto">
-                  {selectedDoc.comments.length === 0 ? (
-                    <div className="text-xs text-slate-500 italic py-2">No comments yet. Start an editorial thread below.</div>
-                  ) : (
-                    selectedDoc.comments.map(c => (
-                      <div
-                        key={c.id}
-                        className={`p-3 rounded-xl border text-xs space-y-1.5 transition ${
-                          c.resolved ? 'bg-slate-950/40 border-slate-850 opacity-60' : 'bg-slate-850/80 border-slate-800'
-                        }`}
-                      >
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-2">
-                            <span className="font-bold text-slate-200">{c.author}</span>
-                            <span className="px-1.5 py-0.5 text-[9px] uppercase font-bold rounded bg-slate-800 text-slate-400">
-                              {c.author_role}
-                            </span>
-                          </div>
-
-                          <button
-                            onClick={() => handleToggleResolveComment(c.id, c.resolved)}
-                            className={`flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded transition ${
-                              c.resolved 
-                                ? 'bg-emerald-500/10 text-emerald-400' 
-                                : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800'
-                            }`}
-                          >
-                            <Check className="w-3 h-3" />
-                            <span>{c.resolved ? 'Resolved' : 'Mark Resolved'}</span>
-                          </button>
-                        </div>
-
-                        <p className="text-slate-300">{c.text}</p>
-                      </div>
-                    ))
-                  )}
-                </div>
-
-                {/* Add Comment Box */}
-                <form onSubmit={handleAddComment} className="flex gap-2">
-                  <input
-                    type="text"
-                    value={commentText}
-                    onChange={(e) => setCommentText(e.target.value)}
-                    placeholder="Add editorial feedback, legal question, or review note..."
-                    className="flex-1 bg-slate-950/70 border border-slate-700/80 rounded-xl px-3 py-2 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-indigo-500"
-                  />
-                  <button
-                    type="submit"
-                    className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold rounded-xl text-xs transition"
-                  >
-                    Comment
-                  </button>
-                </form>
-              </div>
-
-              {/* Full Audit Trail */}
-              <div className="space-y-2 pt-3 border-t border-slate-800">
-                <span className="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
-                  <History className="w-3.5 h-3.5" />
-                  <span>Governance Audit Trail</span>
-                </span>
-
-                <div className="space-y-1.5">
-                  {selectedDoc.audit_trail.map((entry, idx) => (
-                    <div key={idx} className="flex items-start gap-2 text-[11px] text-slate-400 bg-slate-950/40 p-2 rounded-lg border border-slate-850">
-                      <span className="font-mono text-slate-500 shrink-0">
-                        {new Date(entry.timestamp * 1000).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                  <div className="flex items-center justify-between pt-1 border-t border-white/5 text-xs text-neutral-400">
+                    <div className="flex items-center gap-1.5">
+                      <span className="w-5 h-5 rounded-full bg-neutral-800 flex items-center justify-center text-[10px] text-neutral-300">
+                        {doc.author.charAt(0)}
                       </span>
-                      <span className="text-indigo-400 font-semibold shrink-0">[{entry.user_role}]</span>
-                      <span className="font-semibold text-slate-300">{entry.action}:</span>
-                      <span className="text-slate-400 truncate">{entry.details}</span>
+                      <span className="text-[11px]">{doc.author}</span>
                     </div>
-                  ))}
+
+                    <div className="flex items-center gap-2">
+                      <span className="font-mono text-emerald-400 font-bold text-[11px]">
+                        {doc.compliance_score}%
+                      </span>
+                      <ChevronRight className="w-3.5 h-3.5 text-neutral-500" />
+                    </div>
+                  </div>
                 </div>
-              </div>
+              ))
+            )}
+          </div>
 
-            </div>
-          ) : (
-            <div className="p-12 text-center text-slate-400 bg-slate-900/40 rounded-2xl border border-slate-800">
-              Select a document from the list to review.
-            </div>
-          )}
         </div>
-
-      </div>
+      )}
 
     </div>
   );
