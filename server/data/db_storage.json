@@ -479,9 +479,9 @@
       "approved_by": "Shreya Kumari (BRAND_MANAGER)",
       "approved_at": 1792671779.4538643,
       "certificate_id": "CERT-INKLOOM-2026-00922C",
-      "cryptographic_hash": null,
+      "cryptographic_hash": "SHA256:4174606d85a27eb3c3132982cfc12d11f1f65b2da97fba5d792f54434dfe14cb",
       "created_at": 1792659954.9592042,
-      "updated_at": 1792671779.4538202
+      "updated_at": 1792732742.505285
     },
     {
       "id": "draft-security-whitepaper",
@@ -622,7 +622,7 @@
     }
   ],
   "tier": "FREE",
-  "words_scanned": 2519,
-  "total_scans": 193,
-  "last_persisted": 1792671779.512969
+  "words_scanned": 3153,
+  "total_scans": 200,
+  "last_persisted": 1792732742.5055382
 }

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Navbar } from './components/Navbar';
 import { WorkflowSteps } from './components/WorkflowSteps';
+import { MarqueeRibbon } from './components/MarqueeRibbon';
 import { ScannerView } from './components/ScannerView';
 import { VisualScannerView } from './components/VisualScannerView';
 import { BrandRulesView } from './components/BrandRulesView';
@@ -88,7 +89,7 @@ export const App: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#0B0F19] text-slate-100 flex flex-col font-sans selection:bg-indigo-600 selection:text-white">
+    <div className="min-h-screen bg-neutral-950 text-neutral-200 flex flex-col font-sans selection:bg-red-500/30 selection:text-white relative">
       
       {/* Top Global Navigation, Quota Gauge & Persona Switcher */}
       <Navbar
@@ -110,6 +111,9 @@ export const App: React.FC = () => {
         
         {/* Product Workflow 4-Step Journey Header */}
         <WorkflowSteps activeTab={activeTab} setActiveTab={setActiveTab} />
+
+        {/* Capabilities Marquee Ribbon from Luminal demo */}
+        <MarqueeRibbon />
 
         {/* Tab Views */}
         {activeTab === 'scanner' && (
@@ -160,25 +164,25 @@ export const App: React.FC = () => {
 
       </main>
 
-      {/* Footer */}
-      <footer className="border-t border-slate-800/80 bg-slate-950/60 py-6 text-center text-xs text-slate-500">
-        <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2">
+      {/* Footer styled with Luminal Studio aesthetic */}
+      <footer className="border-t border-white/10 bg-neutral-950/80 py-6 text-center text-xs text-neutral-400">
+        <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-3">
           <div className="flex items-center gap-3">
-            <strong className="text-slate-300">Inkloom AI</strong>
-            <span className="text-slate-600">•</span>
-            <span>Zero-Knowledge Brand-Governance Platform</span>
-            <span className="text-slate-600">•</span>
+            <strong className="text-white font-syne uppercase tracking-wider">Inkloom.AI</strong>
+            <span className="text-neutral-600 font-mono">///</span>
+            <span className="text-neutral-400 font-sans">Zero-Knowledge Brand-Governance Protocol</span>
+            <span className="text-neutral-600 font-mono">///</span>
             <button 
               onClick={() => setIsCommandPaletteOpen(true)}
-              className="text-slate-400 hover:text-indigo-400 font-mono text-[11px] underline"
+              className="text-neutral-400 hover:text-red-400 font-mono text-[11px] underline transition-colors"
             >
               ⌘K Quick Actions
             </button>
           </div>
-          <div className="flex items-center gap-4 text-slate-400">
-            <span>Team: <strong className="text-slate-200">indiedevs</strong></span>
+          <div className="flex items-center gap-4 text-neutral-400 font-mono text-[11px]">
+            <span>TEAM: <strong className="text-white font-syne">INDIEDEVS</strong></span>
             <span>Utkarsh Yadav • Shreya Kumari</span>
-            <span className="text-indigo-400 font-semibold">Hackathon Round 2 Production Build</span>
+            <span className="text-red-500 font-semibold uppercase">Round 2 Build</span>
           </div>
         </div>
       </footer>

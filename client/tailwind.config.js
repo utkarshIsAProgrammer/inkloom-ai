@@ -5,6 +5,19 @@ export default {
   theme: {
     extend: {
       colors: {
+        neutral: {
+          950: '#0a0a0a',
+          900: '#121212',
+          850: '#181818',
+          800: '#262626',
+          700: '#404040',
+          600: '#525252',
+          500: '#737373',
+          400: '#a3a3a3',
+          300: '#d4d4d4',
+          200: '#e5e5e5',
+          100: '#f5f5f5',
+        },
         brand: {
           50: '#EEF2FF',
           100: '#E0E7FF',
@@ -17,19 +30,13 @@ export default {
           800: '#3730A3',
           900: '#312E81',
           950: '#1E1B4B',
-        },
-        dark: {
-          900: '#0B0F19',
-          850: '#0F172A',
-          800: '#151E32',
-          700: '#1E293B',
-          600: '#334155',
-          500: '#475569',
         }
       },
       fontFamily: {
-        sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
-        mono: ['JetBrains Mono', 'Fira Code', 'monospace']
+        sans: ['Geist', 'Inter', 'system-ui', '-apple-system', 'sans-serif'],
+        syne: ['Syne', 'sans-serif'],
+        mono: ['Space Mono', 'Geist Mono', 'monospace'],
+        display: ['Syne', 'sans-serif']
       }
     },
   },

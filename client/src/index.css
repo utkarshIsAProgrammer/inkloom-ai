@@ -4,26 +4,73 @@
 
 @layer base {
   body {
-    font-family: 'Inter', system-ui, -apple-system, sans-serif;
-    background-color: #0B0F19;
-    color: #F8FAFC;
+    font-family: 'Geist', 'Inter', system-ui, -apple-system, sans-serif;
+    background-color: #0a0a0a;
+    color: #e5e5e5;
   }
+}
+
+/* Typography from demo */
+.font-syne { font-family: 'Syne', sans-serif !important; }
+.font-geist { font-family: 'Geist', sans-serif !important; }
+.font-geist-mono { font-family: 'Geist Mono', monospace !important; }
+.font-space-grotesk { font-family: 'Space Grotesk', sans-serif !important; }
+.font-space-mono { font-family: 'Space Mono', monospace !important; }
+.font-jakarta { font-family: 'Plus Jakarta Sans', sans-serif !important; }
+
+/* Vertical Laser Beam Animation */
+@keyframes beam-drop {
+  0% { transform: translateY(-100%); }
+  100% { transform: translateY(500%); }
+}
+.animate-beam {
+  animation: beam-drop 5s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+/* Button Border Spin Animation */
+@keyframes border-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+.animate-border-spin {
+  animation: border-spin 2.5s linear infinite;
+}
+
+/* Marquee Animation */
+@keyframes marquee {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+.animate-marquee-infinite {
+  animation: marquee 35s linear infinite;
+}
+.animate-marquee-infinite:hover {
+  animation-play-state: paused;
+}
+
+/* Fade In Up Blur Reveal */
+@keyframes fadeInUpBlur {
+  0% { opacity: 0; transform: translateY(16px); filter: blur(6px); }
+  100% { opacity: 1; transform: translateY(0); filter: blur(0); }
+}
+.animate-in {
+  animation: fadeInUpBlur 0.7s cubic-bezier(0.2, 0.8, 0.2, 1) both;
 }
 
 /* Custom scrollbars */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 5px;
+  height: 5px;
 }
 ::-webkit-scrollbar-track {
-  background: #0F172A;
+  background: #0a0a0a;
 }
 ::-webkit-scrollbar-thumb {
-  background: #334155;
-  border-radius: 3px;
+  background: #262626;
+  border-radius: 2px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #475569;
+  background: #404040;
 }
 
 /* Violation highlights */
