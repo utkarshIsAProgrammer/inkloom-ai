@@ -32,20 +32,40 @@ class VisualAnalyzer:
     def color_distance(c1: Tuple[int, int, int], c2: Tuple[int, int, int]) -> float:
         return math.sqrt((c1[0]-c2[0])**2 + (c1[1]-c2[1])**2 + (c1[2]-c2[2])**2)
 
+    @staticmethod
+    def relative_luminance(rgb: Tuple[int, int, int]) -> float:
+        """WCAG 2.1 relative luminance of an sRGB color."""
+        def channel(value: int) -> float:
+            c = value / 255.0
+            return c / 12.92 if c <= 0.04045 else ((c + 0.055) / 1.055) ** 2.4
+        r, g, b = (channel(v) for v in rgb)
+        return 0.2126 * r + 0.7152 * g + 0.0722 * b
+
+    @classmethod
+    def contrast_ratio(cls, c1: Tuple[int, int, int], c2: Tuple[int, int, int]) -> float:
+        """WCAG 2.1 contrast ratio between two colors, 1.0–21.0."""
+        l1 = cls.relative_luminance(c1)
+        l2 = cls.relative_luminance(c2)
+        lighter, darker = max(l1, l2), min(l1, l2)
+        return (lighter + 0.05) / (darker + 0.05)
+
     def extract_dominant_colors(self, img: Image.Image, num_colors: int = 5) -> List[str]:
         # Resize for fast processing
         small_img = img.convert('RGB').resize((120, 120))
         # Quantize to find dominant colors
         result = small_img.quantize(colors=num_colors)
-        palette = result.getpalette()[:num_colors * 3]
-        
+        # Flat images quantize to fewer entries than requested; read only what exists.
+        palette = result.getpalette() or []
+
         dominant = []
         for i in range(num_colors):
+            if i * 3 + 2 >= len(palette):
+                break
             r = palette[i * 3]
             g = palette[i * 3 + 1]
             b = palette[i * 3 + 2]
             dominant.append(self.rgb_to_hex(r, g, b))
-        return dominant
+        return dominant or [self.rgb_to_hex(255, 255, 255)]
 
     def calculate_palette_match(self, colors: List[str]) -> Tuple[float, List[str]]:
         matches = 0
@@ -120,7 +140,8 @@ class VisualAnalyzer:
 
     def analyze(self, image_base64: Optional[str], alt_text: str = "", asset_name: str = "Brand Asset") -> ImageScanResult:
         dominant_colors = ["#6366F1", "#0F172A", "#10B981", "#1E293B", "#38BDF8"]
-        
+        colors_rgb: List[Tuple[int, int, int]] = [self.hex_to_rgb(c) for c in dominant_colors]
+
         # If real base64 image passed, parse with Pillow
         if image_base64:
             try:
@@ -130,6 +151,7 @@ class VisualAnalyzer:
                 img_data = base64.b64decode(image_base64)
                 img = Image.open(io.BytesIO(img_data))
                 dominant_colors = self.extract_dominant_colors(img, 5)
+                colors_rgb = [self.hex_to_rgb(c) for c in dominant_colors]
             except Exception as e:
                 pass # fallback to default brand palette
 
@@ -138,9 +160,16 @@ class VisualAnalyzer:
 
         violations = list(alt_violations)
 
-        # Contrast ratio heuristic based on dominant light vs dark
-        contrast_ratio = 5.2 # Default pass for standard palette
+        # WCAG 2.1 AA contrast: the asset's darkest stored tone against its
+        # lightest, so the number reflects the actual extracted palette.
+        darkest = min(colors_rgb, key=self.relative_luminance)
+        lightest = max(colors_rgb, key=self.relative_luminance)
+        contrast_ratio = round(self.contrast_ratio(darkest, lightest), 2)
         wcag_pass = contrast_ratio >= 4.5
+
+        if len(colors_rgb) == 1:
+            # A single flat tone carries no internal contrast to evaluate.
+            wcag_pass = False
 
         if palette_score < 60:
             violations.append(ViolationItem(
@@ -168,7 +197,14 @@ class VisualAnalyzer:
         if alt_score < 80:
             recommendations.append(f"Update accessibility alt-text to: '{suggested_alt}'")
         if wcag_pass:
-            recommendations.append("Contrast ratio (5.2:1) meets WCAG 2.1 AA readability standard.")
+            recommendations.append(
+                f"Contrast ratio ({contrast_ratio}:1) meets the WCAG 2.1 AA readability standard."
+            )
+        else:
+            recommendations.append(
+                f"Contrast ratio ({contrast_ratio}:1) is below the 4.5:1 WCAG 2.1 AA minimum — "
+                "lighten the background or darken the foreground."
+            )
 
         status = "COMPLIANT" if total_score >= 80 else ("NEEDS_REVISION" if total_score >= 50 else "NON_COMPLIANT")
 

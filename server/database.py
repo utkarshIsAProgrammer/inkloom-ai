@@ -5,8 +5,14 @@ import uuid
 from typing import List, Optional, Dict, Any
 from .models import (
     BrandRule, ReviewDocument, RuleCategory, Severity, DocumentStatus,
-    UserRole, ThreadedComment, AuditEntry, ScoreBreakdown, PlanTier, UsageStats
+    UserRole, ThreadedComment, AuditEntry, ScoreBreakdown, PlanTier, UsageStats,
+    WaitlistSignup, WaitlistResponse
 )
+from .engine.governance_scanner import readability_quality
+
+# Ledger waitlist: the first real signup takes the place after this figure, so
+# the launch copy ("four hundred and eleven studios are ahead of you") stays true.
+WAITLIST_BASELINE = 411
 
 DATA_DIR = os.path.join(os.path.dirname(__file__), "data")
 STORAGE_FILE = os.path.join(DATA_DIR, "db_storage.json")
@@ -17,9 +23,10 @@ class Database:
     def __init__(self):
         self.rules: Dict[str, BrandRule] = {}
         self.documents: Dict[str, ReviewDocument] = {}
+        self.waitlist: List[WaitlistSignup] = []
         self.tier: PlanTier = PlanTier.FREE
-        self.words_scanned: int = 2450
-        self.total_scans: int = 186
+        self.words_scanned: int = 0
+        self.total_scans: int = 0
         self.init_db()
 
     def init_db(self):
@@ -35,9 +42,13 @@ class Database:
                     for d_data in data.get("documents", []):
                         d = ReviewDocument(**d_data)
                         self.documents[d.id] = d
+                    # .get() keeps older storage files working.
+                    for w_data in data.get("waitlist", []):
+                        w = WaitlistSignup(**w_data)
+                        self.waitlist.append(w)
                     self.tier = PlanTier(data.get("tier", "FREE"))
-                    self.words_scanned = data.get("words_scanned", 2450)
-                    self.total_scans = data.get("total_scans", 186)
+                    self.words_scanned = data.get("words_scanned", 0)
+                    self.total_scans = data.get("total_scans", 0)
                 return
             except Exception as e:
                 print(f"Error loading {STORAGE_FILE}, falling back to defaults: {e}")
@@ -47,9 +58,10 @@ class Database:
     def reset_to_defaults(self):
         self.rules.clear()
         self.documents.clear()
+        self.waitlist.clear()
         self.tier = PlanTier.FREE
-        self.words_scanned = 2450
-        self.total_scans = 186
+        self.words_scanned = 0
+        self.total_scans = 0
 
         if os.path.exists(DEFAULT_RULES_FILE):
             with open(DEFAULT_RULES_FILE, "r", encoding="utf-8") as f:
@@ -72,6 +84,7 @@ class Database:
             data = {
                 "rules": [r.model_dump() for r in self.rules.values()],
                 "documents": [d.model_dump() for d in self.documents.values()],
+                "waitlist": [w.model_dump() for w in self.waitlist],
                 "tier": self.tier.value,
                 "words_scanned": self.words_scanned,
                 "total_scans": self.total_scans,
@@ -223,49 +236,105 @@ class Database:
     def emergency_purge(self) -> bool:
         """Purge all stored drafts and audit logs for zero-data retention compliance."""
         self.documents.clear()
+        self.waitlist.clear()
         self.persist()
         return True
 
+    # Ledger Waitlist
+    def get_waitlist_count(self) -> int:
+        """Total studios in the queue, including the launch baseline."""
+        return WAITLIST_BASELINE + len(self.waitlist)
+
+    def add_waitlist_signup(self, email: str) -> WaitlistResponse:
+        """Add an email to the waitlist. Idempotent: a repeat email keeps its place."""
+        existing = next((w for w in self.waitlist if w.email == email), None)
+        if existing:
+            return WaitlistResponse(
+                queue_position=existing.queue_position,
+                total_ahead=existing.queue_position - 1,
+                total=self.get_waitlist_count(),
+                already_registered=True
+            )
+
+        signup = WaitlistSignup(
+            id=f"wl-{uuid.uuid4().hex[:8]}",
+            email=email,
+            queue_position=WAITLIST_BASELINE + len(self.waitlist) + 1
+        )
+        self.waitlist.append(signup)
+        self.persist()
+
+        return WaitlistResponse(
+            queue_position=signup.queue_position,
+            total_ahead=signup.queue_position - 1,
+            total=self.get_waitlist_count(),
+            already_registered=False
+        )
+
     def get_analytics(self) -> Dict[str, Any]:
+        """Every number here is derived from stored scans and documents — no placeholders."""
         docs = list(self.documents.values())
-        total_scans = self.total_scans
-        avg_health = int(sum(d.compliance_score for d in docs) / max(1, len(docs))) if docs else 92
+        stored_violations = [v for d in docs for v in d.violations]
 
-        cat_counts = {
-            "PRODUCT_FACTS": 42,
-            "TONE_OF_VOICE": 31,
-            "RESTRICTED_TERMINOLOGY": 24,
-            "VISUAL_GUIDELINES": 14
+        if docs:
+            avg_health = int(round(sum(d.compliance_score for d in docs) / len(docs)))
+        else:
+            avg_health = 0
+
+        cat_counts: Dict[str, int] = {
+            "PRODUCT_FACTS": 0,
+            "TONE_OF_VOICE": 0,
+            "RESTRICTED_TERMINOLOGY": 0,
+            "VISUAL_GUIDELINES": 0,
         }
-        for d in docs:
-            for v in d.violations:
-                cat_counts[v.category.value] = cat_counts.get(v.category.value, 0) + 1
+        rule_counts: Dict[str, Dict[str, Any]] = {}
+        for v in stored_violations:
+            cat_counts[v.category.value] = cat_counts.get(v.category.value, 0) + 1
+            entry = rule_counts.setdefault(v.rule_id, {
+                "id": v.rule_id,
+                "name": v.rule_name,
+                "violations": 0,
+                "category": v.category.value,
+            })
+            entry["violations"] += 1
 
-        top_rules = [
-            {"id": "RULE-FACT-01", "name": "Verified SLA & Uptime Guarantees", "violations": 28, "category": "PRODUCT_FACTS"},
-            {"id": "RULE-TERM-03", "name": "Prohibited Competitor Disparagement", "violations": 21, "category": "RESTRICTED_TERMINOLOGY"},
-            {"id": "RULE-TONE-01", "name": "Absolutist & Hyperbolic Tone", "violations": 19, "category": "TONE_OF_VOICE"},
-            {"id": "RULE-TERM-02", "name": "Non-Inclusive Technical Terminology", "violations": 16, "category": "RESTRICTED_TERMINOLOGY"},
-            {"id": "RULE-FACT-04", "name": "Certified Security Standards", "violations": 12, "category": "PRODUCT_FACTS"}
-        ]
+        top_rules = sorted(rule_counts.values(), key=lambda r: r["violations"], reverse=True)[:5]
 
-        department_compliance = [
-            {"department": "Product Marketing", "score": 94, "trend": "+4.2%"},
-            {"department": "Developer Relations", "score": 89, "trend": "+1.8%"},
-            {"department": "Sales & Field Enablement", "score": 78, "trend": "+6.5%"},
-            {"department": "Executive Communications", "score": 98, "trend": "+0.5%"}
-        ]
+        # Hours saved = time a human would spend reading every scanned word at
+        # 200 wpm; the engine scans them instantly instead.
+        editorial_hours = round((self.words_scanned / 200) / 60, 1)
+
+        # Guideline clarity = average readability of the active rules' own text.
+        active_rules = [r for r in self.rules.values() if r.active]
+        if active_rules:
+            clarity_index = round(
+                sum(readability_quality(r.guideline_text) for r in active_rules)
+                / len(active_rules) * 100,
+                1,
+            )
+        else:
+            clarity_index = 0.0
+
+        if top_rules:
+            leader = top_rules[0]
+            clarity_recommendation = (
+                f"Most findings come from {leader['name']} ({leader['id']}) with "
+                f"{leader['violations']} stored hits — review that guideline's wording with the team."
+            )
+        else:
+            clarity_recommendation = (
+                "No findings stored yet. Run a scan and send a draft to review to populate this view."
+            )
 
         return {
             "brand_health_index": avg_health,
-            "total_scans": total_scans,
-            "violations_intercepted": sum(cat_counts.values()) + 95,
-            "editorial_hours_saved": 48.5,
+            "total_scans": self.total_scans,
+            "violations_intercepted": len(stored_violations),
+            "editorial_hours_saved": editorial_hours,
             "category_distribution": cat_counts,
             "top_violated_rules": top_rules,
-            "department_compliance": department_compliance,
-            "guideline_clarity_index": 92.4,
-            "clarity_recommendation": "Review RULE-TONE-01 with Sales team to clarify acceptable ROI enthusiasm vs. hyperbolic warranties."
+            "guideline_clarity_index": clarity_index,
+            "clarity_recommendation": clarity_recommendation,
         }
 
 db = Database()
