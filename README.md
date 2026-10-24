@@ -1,8 +1,19 @@
 # Inkloom AI — Brand-Governance Platform
 
-**Team:** indiedevs — Utkarsh Yadav (AI & Backend Lead) & Shreya Kumari (Frontend & Workflow Lead)
-**Track:** Enterprise AI & Workflow Automation
-**Stage:** Round 2 — The Build (22–25 October 2026)
+<div align="center">
+
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.115+-009688.svg?style=flat-square&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
+[![React](https://img.shields.io/badge/React-18+-20232a.svg?style=flat-square&logo=react&logoColor=61dafb)](https://reactjs.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.7+-3178C6.svg?style=flat-square&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![Google Gemini](https://img.shields.io/badge/Google_Gemini-2.0-8E75C2.svg?style=flat-square&logo=google&logoColor=white)](https://ai.google.dev/)
+[![Tailwind CSS](https://img.shields.io/badge/TailwindCSS-3.4+-38B2AC.svg?style=flat-square&logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
+[![Tests](https://img.shields.io/badge/Tests-42_Passing-brightgreen.svg?style=flat-square)](server/test_e2e.py)
+
+</div>
+
+**Team:** indiedevs — Utkarsh Yadav (AI & Backend Lead) & Shreya Kumari (Frontend & Workflow Lead)  
+**Track:** Enterprise AI & Workflow Automation  
+**Stage:** Round 2 — The Build (22–25 October 2026)  
 **This file is the updated project PDF for Round 2.**
 
 Inkloom AI is a brand-governance workspace. A creator or brand manager pastes marketing copy, technical documentation, or uploads a visual asset, and Inkloom audits it against the company's brand manual **before publication** — returning a 0–100 compliance score and letter grade, quoting every offending passage at real character offsets, citing the exact manual section, explaining the legal/reputational risk, and offering context-preserving fixes up to a full AI rewrite. Approved drafts earn a SHA-256-signed clearance certificate with a public verification URL.
@@ -53,7 +64,7 @@ Deploy the same repository to any host that runs `./start.sh` (or `uvicorn serve
 | 9 | Judge one-click testing | Glowing **accent sample buttons** on every testable surface: three scan drafts (risky / clean / thin), a weak-alt-text preset, a full sample rule form fill, and a sample review comment. Scan even has one single toggle button that cycles all three demo drafts on click | Scan tab → click the glowing "Try a sample" button repeatedly; Assets → "Sample: weak alt text"; Rules → "Fill sample rule"; Review → "Sample comment" |
 | 10 | Key-safe AI integration | `GEMINI_API_KEY` lives only in the server environment, is sent in an `x-goog-api-key` header (never a URL), is rate-limited per IP, and falls back to the deterministic engine on any failure. It is never returned to the client | The `test_provider_key_is_never_returned_to_clients` and `test_ai_only_never_sees_unscrubbed_secrets` tests assert this; Trust tab documents it |
 
-A total of **35 automated end-to-end tests** back these features (`python3 -m unittest server.test_e2e`). They cover governance scoring, citations, PII scrubbing, ephemeral mode, fix-all, oversized-draft rejection, the AI path with the model mocked out, the review workflow and certificates, quota tiers, rule export/import, gzip + immutable asset caching, the waitlist API, and the static client mount.
+A total of **42 automated end-to-end tests** back these features (`python3 -m unittest server.test_e2e`). They cover governance scoring, citations, PII scrubbing, ephemeral mode, fix-all, oversized-draft rejection, the AI path with the model mocked out, image & OWASP security scanning, the review workflow and certificates, quota tiers, rule export/import, gzip + immutable asset caching, the waitlist API, and the static client mount.
 
 ---
 
@@ -188,7 +199,7 @@ For client development with hot reload, `cd client && bun run dev` serves on `ht
 python3 -m unittest server.test_e2e
 ```
 
-35 end-to-end tests cover the governance engine (scoring, citations, PII scrubbing, ephemeral mode, fix-all, oversized-draft rejection), the AI path with the model mocked out (AI analysis mode, gibberish failing the legibility review, semantic violations with no keyword match, hallucinated offsets repaired to the real quote, secrets never reaching the model prompt, the key never appearing in any response, AI full-draft rewrite, per-IP rate limiting), the review workflow and signed certificates, quota tiers, rule export/import, gzip and immutable asset caching, the waitlist API, and the static client mount. The waitlist tests restore the queue after they run, so the shipped queue count stays truthful.
+42 end-to-end tests cover the governance engine (scoring, citations, PII scrubbing, ephemeral mode, fix-all including the measured rescan, oversized-draft rejection), the AI path with the model mocked out (AI analysis mode, gibberish failing the legibility review, semantic violations with no keyword match, hallucinated offsets repaired to the real quote, secrets never reaching the model prompt, the key never appearing in any response, AI full-draft rewrite, per-IP rate limiting), image/asset scanning including alt-text-only input and OWASP LLM Top 10 security findings in alt text, the standalone OWASP scanner behaviour, the review workflow and signed certificates, quota tiers, rule export/import, gzip and immutable asset caching, the waitlist API, and the static client mount. The waitlist tests restore the queue after they run, so the shipped queue count stays truthful.
 
 ---
 

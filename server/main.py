@@ -22,6 +22,7 @@ from .engine.governance_scanner import GovernanceScanner
 from .engine.visual_analyzer import VisualAnalyzer
 from .engine.ai_copilot import AICopilot
 from .engine.ai_engine import AIGovernanceEngine
+from .engine.security_scanner import scan as scan_security
 
 app = FastAPI(
     title="Inkloom AI — Brand-Governance Platform API",
@@ -292,13 +293,58 @@ async def scan_content(req: ScanRequest, request: Request):
 
 @app.post("/api/scan/image", response_model=ImageScanResult)
 def scan_image(req: ImageScanRequest):
+    if not req.image_base64 and not (req.alt_text and req.alt_text.strip()):
+        raise HTTPException(
+            status_code=422,
+            detail="An image scan needs either an image or meaningful alt text.",
+        )
+
+    # OWASP LLM Top 10 safety pass: the input is the attack surface, so it is
+    # scanned for injection and exfiltration indicators before any visual work.
+    text_under_inspection = ""
+    if req.image_base64:
+        text_under_inspection = _image_context_for_scan(req.image_base64, req.alt_text or "")
+    elif req.alt_text:
+        text_under_inspection = req.alt_text
+
+    security_findings = scan_security(text_under_inspection) if text_under_inspection else []
+
     rules = db.get_all_rules()
     analyzer = VisualAnalyzer(rules)
-    return analyzer.analyze(
+    result = analyzer.analyze(
         image_base64=req.image_base64,
         alt_text=req.alt_text or "",
         asset_name=req.asset_name or "Brand Graphic"
     )
+
+    if security_findings:
+        result.recommendations.insert(0, "Security flag(s) found in this asset’s input — review before publishing.")
+        for finding in security_findings[:3]:
+            result.recommendations.append(f"Security: {finding.rule_name} — {finding.ai_rationale}")
+
+    result.violations = list(security_findings) + list(result.violations)
+    result.alt_text_score = min(result.alt_text_score, 50 if security_findings else result.alt_text_score)
+
+    return result
+
+
+def _image_context_for_scan(image_base64: str, alt_text: str) -> str:
+    """Build a small text surface for the OWASP scan when an image is attached.
+
+    The visual analyzer handles the actual image bytes; this helper only builds
+    the text that the security scanner inspects (alt text plus a conservative
+    base64-shape probe). The probe is intentionally short and does not decode
+    the blob — that would be expensive and unnecessary for pattern detection.
+    """
+    parts: list[str] = []
+    if alt_text:
+        parts.append(alt_text)
+
+    head = image_base64[:120].replace("\n", " ").replace("\r", " ")
+    if head:
+        parts.append(f"[image payload probe] {head}")
+
+    return "\n".join(parts)
 
 @app.post("/api/scan/fix-all", response_model=FixAllResponse)
 async def fix_all_violations(req: FixAllRequest, request: Request):

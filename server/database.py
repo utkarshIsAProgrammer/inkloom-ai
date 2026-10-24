@@ -66,16 +66,26 @@ class Database:
         if os.path.exists(DEFAULT_RULES_FILE):
             with open(DEFAULT_RULES_FILE, "r", encoding="utf-8") as f:
                 raw_rules = json.load(f)
+                if not isinstance(raw_rules, list):
+                    raw_rules = [raw_rules]
                 for r_data in raw_rules:
-                    rule = BrandRule(**r_data)
-                    self.rules[rule.id] = rule
+                    try:
+                        rule = BrandRule(**r_data)
+                        self.rules[rule.id] = rule
+                    except Exception as e:
+                        print(f"Skipping unparseable rule row {r_data.get('id')}: {e}")
 
         if os.path.exists(DEFAULT_DRAFTS_FILE):
             with open(DEFAULT_DRAFTS_FILE, "r", encoding="utf-8") as f:
                 raw_drafts = json.load(f)
+                if not isinstance(raw_drafts, list):
+                    raw_drafts = [raw_drafts]
                 for d_data in raw_drafts:
-                    doc = ReviewDocument(**d_data)
-                    self.documents[doc.id] = doc
+                    try:
+                        doc = ReviewDocument(**d_data)
+                        self.documents[doc.id] = doc
+                    except Exception as e:
+                        print(f"Skipping unparseable draft row {d_data.get('id')}: {e}")
 
         self.persist()
 

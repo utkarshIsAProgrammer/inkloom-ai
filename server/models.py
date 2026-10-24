@@ -76,8 +76,9 @@ class ScanRequest(BaseModel):
     channel: Optional[str] = Field(default="Marketing Copy", max_length=80)
     content: str = Field(max_length=100_000)
     document_id: Optional[str] = None
-    ephemeral: bool = False # If true: zero data retention mode, strictly in-memory
-    scrub_pii: bool = True  # If true: auto-masks API keys, credentials, and emails
+    ephemeral: bool = False  # zero data retention mode, strictly in-memory
+    scrub_pii: bool = True  # auto-masks API keys, credentials, and emails
+    scan_security: bool = True  # OWASP LLM Top 10 safety scan on the input text
 
 class ScoreBreakdown(BaseModel):
     tone: int

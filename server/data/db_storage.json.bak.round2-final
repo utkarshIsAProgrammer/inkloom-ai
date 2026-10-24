@@ -1,0 +1,178 @@
+{
+  "rules": [
+    {
+      "id": "RULE-FACT-01",
+      "name": "Absolute performance claims",
+      "category": "PRODUCT_FACTS",
+      "severity": "CRITICAL",
+      "guideline_section": "Section 4.2 \u2014 Legal Disclaimers & Warranties",
+      "guideline_text": "Performance claims must be qualified and traceable to a published source. Absolute guarantees \u2014 100% uptime, zero downtime, never fails \u2014 are prohibited in commercial collateral.",
+      "pattern_or_terms": [
+        "100% uptime",
+        "zero downtime",
+        "never fails",
+        "guaranteed to eliminate all"
+      ],
+      "rationale": "Absolute warranties forfeit standard liability protection and create strict legal exposure in commercial disputes.",
+      "suggested_fix": "verified availability under standard service terms",
+      "active": true,
+      "created_at": 1700000000.0,
+      "updated_at": 1700000000.0
+    },
+    {
+      "id": "RULE-TERM-03",
+      "name": "Restricted competitor terms",
+      "category": "RESTRICTED_TERMINOLOGY",
+      "severity": "WARNING",
+      "guideline_section": "Section 5.1 \u2014 Competitor & Third-Party Comparisons",
+      "guideline_text": "Do not reference competitor internals, comparative benchmarks, or unverified superiority claims. Competitor names, 'legacy systems', and 'clunky' comparisons are restricted in public-facing copy.",
+      "pattern_or_terms": [
+        "AWS is clunky",
+        "legacy systems",
+        "infinitely superior",
+        "foolish not to"
+      ],
+      "rationale": "Unverified comparative claims can create unfair-competition and misleading-advertising exposure.",
+      "suggested_fix": "compare only against published, attributable benchmarks",
+      "active": true,
+      "created_at": 1700000000.0,
+      "updated_at": 1700000000.0
+    },
+    {
+      "id": "RULE-TONE-04",
+      "name": "Evidence-backed language",
+      "category": "TONE_OF_VOICE",
+      "severity": "WARNING",
+      "guideline_section": "Section 1.2 \u2014 Evidence-Backed Language",
+      "guideline_text": "Avoid superlatives and emotionally loaded pressure language unless attributable. Phrases like 'foolish not to' and 'world's greatest' must carry proof or be removed.",
+      "pattern_or_terms": [
+        "foolish not to",
+        "world's greatest",
+        "military-grade zero-hack"
+      ],
+      "rationale": "Promotional hyperbole undermines credibility and can mislead enterprise buyers.",
+      "suggested_fix": "replace with a specific, attributable benefit",
+      "active": true,
+      "created_at": 1700000000.0,
+      "updated_at": 1700000000.0
+    },
+    {
+      "id": "RULE-TERM-01",
+      "name": "Restricted trademarked product names",
+      "category": "RESTRICTED_TERMINOLOGY",
+      "severity": "WARNING",
+      "guideline_section": "Section 5.2 \u2014 Trademark & Product Naming",
+      "guideline_text": "Do not drop competitor or third-party trademarks into public copy without review. Even accurate references can read as endorsements or create trademark-naming confusion in marketing contexts.",
+      "pattern_or_terms": [
+        "AWS",
+        "Azure",
+        "Google Cloud",
+        "competitor",
+        "rival platform"
+      ],
+      "rationale": "Casual trademark use can imply endorsement and creates legal review overhead.",
+      "suggested_fix": "refer to comparable service categories instead of named competitors",
+      "active": true,
+      "created_at": 1700000000.0,
+      "updated_at": 1700000000.0
+    },
+    {
+      "id": "RULE-TONE-02",
+      "name": "Overpromising language",
+      "category": "TONE_OF_VOICE",
+      "severity": "WARNING",
+      "guideline_section": "Section 1.4 \u2014 Claims & Promises",
+      "guideline_text": "Avoid promises that imply certainty beyond what the product can deliver. Words like 'guaranteed', 'never', 'always', 'every', and 'flawless' must be reserved for verified, attributable claims only.",
+      "pattern_or_terms": [
+        "guaranteed",
+        "never fails",
+        "always",
+        "flawless",
+        "every customer"
+      ],
+      "rationale": "Overpromising language creates misaligned expectations and potential warranty exposure.",
+      "suggested_fix": "express the benefit with appropriate qualification",
+      "active": true,
+      "created_at": 1700000000.0,
+      "updated_at": 1700000000.0
+    },
+    {
+      "id": "RULE-FACT-03",
+      "name": "Unverifiable scale claims",
+      "category": "PRODUCT_FACTS",
+      "severity": "WARNING",
+      "guideline_section": "Section 4.3 \u2014 Factual Accuracy & Traceability",
+      "guideline_text": "Scale and reach claims must be specific and traceable. Vague superlatives such as 'deployed everywhere', 'used by everyone', or 'the largest' must cite a source or be removed.",
+      "pattern_or_terms": [
+        "every country in the world",
+        "every customer",
+        "the largest",
+        "worldwide"
+      ],
+      "rationale": "Unverifiable scale claims are a common source of factual and regulatory risk in public-facing material.",
+      "suggested_fix": "cite the source or replace with a specific, attributable figure",
+      "active": true,
+      "created_at": 1700000000.0,
+      "updated_at": 1700000000.0
+    }
+  ],
+  "documents": [
+    {
+      "id": "doc-sample-clean",
+      "title": "Security overview",
+      "author": "Inkloom reviewer",
+      "author_role": "CREATOR",
+      "channel": "Technical Documentation",
+      "status": "DRAFT",
+      "content": "Inkloom scans every draft against the published brand manual and records a signed clearance certificate for each approved version. Performance figures in this material come from the Q3 audit report, and every claim can be traced to a numbered section of the manual.",
+      "original_content": "Inkloom scans every draft against the published brand manual and records a signed clearance certificate for each approved version. Performance figures in this material come from the Q3 audit report, and every claim can be traced to a numbered section of the manual.",
+      "compliance_score": 96,
+      "score_breakdown": {
+        "tone": 96,
+        "facts": 96,
+        "terminology": 96,
+        "clarity": 96
+      },
+      "violations": [],
+      "comments": [],
+      "audit_trail": [],
+      "approved_by": null,
+      "approved_at": null,
+      "certificate_id": null,
+      "cryptographic_hash": null,
+      "created_at": 1700000000.0,
+      "updated_at": 1700000000.0
+    },
+    {
+      "id": "doc-sample-risky",
+      "title": "Q4 launch announcement",
+      "author": "Inkloom reviewer",
+      "author_role": "CREATOR",
+      "channel": "Marketing Copy",
+      "status": "DRAFT",
+      "content": "We are thrilled to unveil the world's greatest workflow platform, an infinitely superior solution that guarantees 100% uptime with zero downtime under any circumstances.",
+      "original_content": "We are thrilled to unveil the world's greatest workflow platform, an infinitely superior solution that guarantees 100% uptime with zero downtime under any circumstances.",
+      "compliance_score": 42,
+      "score_breakdown": {
+        "tone": 42,
+        "facts": 42,
+        "terminology": 42,
+        "clarity": 42
+      },
+      "violations": [],
+      "comments": [],
+      "audit_trail": [],
+      "approved_by": null,
+      "approved_at": null,
+      "certificate_id": null,
+      "cryptographic_hash": null,
+      "created_at": 1700000000.0,
+      "updated_at": 1700000000.0
+    }
+  ],
+  "waitlist": [],
+  "tier": "FREE",
+  "words_scanned": 9999,
+  "total_scans": 1104,
+  "last_persisted": 1792871212.0334756
+}

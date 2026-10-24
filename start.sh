@@ -1,39 +1,33 @@
 #!/usr/bin/env bash
-set -e
+set -euo pipefail
+cd "$(dirname "$0")"
 
-DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
-cd "$DIR"
+echo "==> installing python deps"
+uv pip install -r requirements.txt --quiet 2>/dev/null || pip install -r requirements.txt --quiet
 
-echo "=========================================================="
-echo "  🚀 Starting Inkloom AI — Brand-Governance Platform"
-echo "  Track: Enterprise AI & Workflow Automation"
-echo "  Team: indiedevs (Utkarsh Yadav & Shreya Kumari)"
-echo "=========================================================="
-
-# Free port 8000 if already occupied by an old process
-OLD_PID=$(lsof -ti:8000 2>/dev/null || true)
-if [ -n "$OLD_PID" ]; then
-    echo "🔄 Freeing existing process on port 8000 (PID: $OLD_PID)..."
-    kill -9 $OLD_PID 2>/dev/null || true
-    sleep 0.5
+echo "==> installing client deps + build"
+if [ -d client/node_modules ]; then
+  echo "client deps already present"
+else
+  cd client
+  if command -v bun >/dev/null 2>&1; then
+    bun install --quiet
+  else
+    npm install --quiet
+  fi
+  cd ..
 fi
 
-# Activate virtualenv if present
-if [ -d "$DIR/.venv" ]; then
-    source "$DIR/.venv/bin/activate"
+if [ ! -d client/dist ] || [ ! -f client/dist/index.html ]; then
+  echo "==> building client"
+  cd client
+  if command -v bun >/dev/null 2>&1; then
+    bun run build
+  else
+    npm run build
+  fi
+  cd ..
 fi
 
-# Build client if dist doesn't exist
-if [ ! -d "$DIR/client/dist" ]; then
-    echo "📦 Building client assets..."
-    cd "$DIR/client"
-    bun run build || npm run build
-    cd "$DIR"
-fi
-
-echo "✨ Server starting on http://localhost:8000"
-echo "📖 Swagger API Docs on http://localhost:8000/docs"
-echo "🖥️  Opening interactive Web UI on http://localhost:8000"
-echo "Press Ctrl+C to stop."
-
-exec python3 -m uvicorn server.main:app --host 0.0.0.0 --port 8000
+echo "==> starting server on :8000"
+exec uvicorn server.main:app --host 0.0.0.0 --port 8000
