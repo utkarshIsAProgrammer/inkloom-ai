@@ -45,3 +45,7 @@ Thumbs.db
 coverage/
 .nyc_output/
 .ruff_cache/
+
+# Round 3 build artifacts
+*.pdf
+inkloom-ai-round-3.pdf
