@@ -1,8 +1,47 @@
+# Environment and secrets
+.env
+.env.local
+.env.*.local
+*.env
+GEMINI_API_KEY
+AI_RATE_LIMIT_PER_MIN
+
+# Python
 .venv/
 venv/
 __pycache__/
 *.pyc
+*.pyo
+*.egg-info/
+.mypy_cache/
+.pytest_cache/
+
+# Node / JS
 node_modules/
+bun.lock
+bun.lockb
+package-lock.json
+
+# Vite / build artifacts (built by start.sh at deploy time)
+dist/
+client/dist/
+client/dist/
+*.tsbuildinfo
+
+# Writable JSON data stores (persisted state + defaults)
+server/data/db_storage.json
+server/data/sample_drafts.json
+server/data/default_guidelines.json
+
+# OS and editor cruft
 .DS_Store
+Thumbs.db
 *.log
-.env
+*.tmp
+*~
+.dir-locals.el
+
+# Test artifacts / coverage
+coverage/
+.nyc_output/
+.ruff_cache/
